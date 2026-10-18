@@ -1,0 +1,121 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d0b13">
+<title>Suki's Multi Tools — Auto-Updating Launcher</title>
+<style>
+:root{color-scheme:dark;--bg:#0c0911;--panel:#17111f;--text:#f7f2ff;--muted:#b5a8c5;--line:#3a2c49;--accent:#c084fc;--green:#86efac;--red:#fda4af}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}#app{position:fixed;inset:0;width:100%;height:100%;border:0;background:var(--bg);opacity:0;visibility:hidden;transition:opacity .45s ease,visibility 0s linear .45s}#app.ready{opacity:1;visibility:visible;transition:opacity .45s ease,visibility 0s}.splash{position:fixed;inset:0;z-index:3;display:grid;place-items:center;overflow:auto;padding:14px;background:radial-gradient(ellipse at 50% 0%,#342043 0%,#1a1223 43%,#0c0911 84%);transition:opacity .45s ease,transform .45s ease,visibility 0s}.splash.gone{opacity:0;transform:translateY(-8px) scale(.99);visibility:hidden;pointer-events:none;transition:opacity .45s ease,transform .45s ease,visibility 0s linear .45s}.panel{width:min(570px,100%);max-height:calc(100dvh - 24px);overflow:auto;padding:clamp(17px,4vw,27px);border:1px solid #4a365c;border-radius:22px;background:linear-gradient(145deg,#21172dee,#120e19f7);box-shadow:0 24px 100px #0009}.brand{display:flex;align-items:center;gap:12px}.logo{width:49px;height:49px;display:grid;place-items:center;flex-shrink:0;border-radius:15px;font-size:26px;background:linear-gradient(145deg,#422657,#24182f);border:1px solid #70478f}h1{font-size:clamp(23px,5vw,30px);letter-spacing:-.045em;line-height:1.1;margin:0}.tag{color:#c7b4d8;font-size:12px;margin-top:5px}.intro{color:var(--muted);font-size:13px;margin:15px 0 16px}.status{padding:14px;border:1px solid var(--line);background:#0c0a11b8;border-radius:15px}.status-title{display:flex;align-items:center;gap:9px;font-weight:760}.dot{width:8px;height:8px;flex-shrink:0;border-radius:50%;background:var(--accent);box-shadow:0 0 15px var(--accent);animation:pulse 1.35s ease-in-out infinite}.status-text{font-size:12px;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}.meter{margin-top:13px;padding:11px;border:1px solid #3c2e49;border-radius:11px;background:#100c17}.meter-top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}.caption{font-size:9px;font-weight:850;letter-spacing:.14em;color:#a995ba}.filename{font-size:13px;font-weight:800;color:#f5eaff;margin-top:3px;overflow-wrap:anywhere;max-width:360px}.count{font-size:12px;color:#d8b9fa;font-variant-numeric:tabular-nums;white-space:nowrap}.bar{height:7px;margin-top:9px;border-radius:99px;background:#2d2435;overflow:hidden}.bar span{display:block;width:0;height:100%;border-radius:99px;background:linear-gradient(90deg,#954ce8,#e0a7ff);transition:width .28s ease}.list-title{display:flex;justify-content:space-between;gap:10px;margin:13px 2px 6px;color:#aa98bb;font-size:9px;font-weight:850;letter-spacing:.13em}.files{list-style:none;margin:0;padding:0;max-height:185px;overflow:auto;scrollbar-width:thin;scrollbar-color:#5a426d #171020;border:1px solid #30243b;border-radius:10px;background:#0c0911a8}.files li{display:flex;align-items:center;gap:8px;min-height:29px;padding:5px 9px;border-bottom:1px solid #241b2d;font-size:11px;transition:background .2s, color .2s}.files li:last-child{border-bottom:0}.files li.active{background:#42275877;box-shadow:inset 3px 0 #c084fc;color:#fff}.files li.done .state{color:var(--green)}.files li.failed .state{color:var(--red)}.state{width:13px;flex-shrink:0;text-align:center;color:#91839f;font-weight:800}.path{flex:1;min-width:0;overflow-wrap:anywhere}.file-state{color:#9d90ac;text-align:right;white-space:nowrap}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}button,a.button{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 13px;border:1px solid transparent;border-radius:11px;background:linear-gradient(135deg,#d3a1ff,#b879f2);color:#1b1027;font:inherit;font-size:13px;font-weight:800;text-decoration:none;cursor:pointer}button:disabled{opacity:.6;cursor:wait}a.secondary{background:#292231;color:#eee5fa;border-color:#40364b}.error{display:none;margin-top:12px;padding:10px 11px;border:1px solid #70303e;border-radius:10px;background:#351922;color:#ffc0c7;font-size:12px;overflow-wrap:anywhere}.error.show{display:block}.hint{font-size:11px;color:#8e829d;margin:13px 2px 0}.hint a{color:#cfa4ff;text-decoration:none}.small{font-size:10px;color:#7f728e;margin-top:6px}@keyframes pulse{0%,100%{opacity:.45;transform:scale(.86)}50%{opacity:1;transform:scale(1.08)}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<iframe id="app" title="Suki's Multi Tools App" allow="clipboard-read; clipboard-write; fullscreen" allowfullscreen></iframe>
+<div class="splash" id="splash"><section class="panel">
+  <div class="brand"><div class="logo">🧰</div><div><h1>Suki's Multi Tools</h1><div class="tag">Live source launcher · discovers the app's linked files</div></div></div>
+  <p class="intro">Downloads the current app layout from the source repository, discovers its CSS and JavaScript files, then runs the real app in an isolated frame. Changes are checked automatically.</p>
+  <div class="status"><div class="status-title"><span class="dot" id="dot"></span><span id="title">Connecting to source…</span></div><div class="status-text" id="detail">Fetching the latest index.html and discovering its linked files.</div>
+    <div class="meter"><div class="meter-top"><div><div class="caption">CURRENT FILE</div><div class="filename" id="file">index.html</div></div><div class="count" id="count">0/— · 0%</div></div><div class="bar"><span id="bar"></span></div></div>
+    <div class="list-title"><span>LIVE LOAD SEQUENCE</span><span id="readyCount">0 files ready</span></div><ul class="files" id="files"></ul>
+    <div class="error" id="error" role="status"></div>
+    <div class="actions"><button id="retry">↻ Try again</button><a class="button secondary" href="https://github.com/jace01b-web/Sukis-Multi-Tools-App" target="_blank" rel="noopener">Source repository ↗</a><a class="button secondary" href="https://cdn.jsdelivr.net/gh/jace01b-web/Sukis-Multi-Tools-App@main/index.html" target="_blank" rel="noopener">Open source app ↗</a></div>
+  </div>
+  <p class="hint">Internet required. This works by loading the real source HTML and letting the browser request its linked files from GitHub/CDN; it does not display the raw source as a text page.</p>
+</section></div>
+<script>
+(function(){
+'use strict';
+var OWNER='jace01b-web', REPO='Sukis-Multi-Tools-App', BRANCH='main';
+var RAW_BASE='https://raw.githubusercontent.com/'+OWNER+'/'+REPO+'/refs/heads/'+BRANCH+'/';
+var RAW_URL=RAW_BASE+'index.html';
+var CDN_BASE='https://cdn.jsdelivr.net/gh/'+OWNER+'/'+REPO+'@'+BRANCH+'/';
+var COMMIT_API='https://api.github.com/repos/'+OWNER+'/'+REPO+'/commits/'+BRANCH;
+var POLL_FILE_MS=30000, POLL_COMMIT_MS=120000;
+var frame=document.getElementById('app'), splash=document.getElementById('splash'), title=document.getElementById('title'), detail=document.getElementById('detail'), fileEl=document.getElementById('file'), countEl=document.getElementById('count'), bar=document.getElementById('bar'), listEl=document.getElementById('files'), readyEl=document.getElementById('readyCount'), errorEl=document.getElementById('error'), retry=document.getElementById('retry'), dot=document.getElementById('dot');
+var currentHash=null,currentSha=null,currentToken='',currentHtml='',resourceItems=[],allItems=[],loading=false,loadAgain=false,revealed=false,attemptNo=0,activeStrategy=0,activeBase=0,frameViolations=0,currentBlobUrl=null,timeoutId=0,finishTimer=0,assetFallbackTried=false,assetEventCount=0;
+var STRATEGIES=['blob','srcdoc','write'];
+window.addEventListener('securitypolicyviolation',function(e){var d=e.effectiveDirective||e.violatedDirective||'';if(/^(frame|child)-src/.test(d))frameViolations++;});
+function setError(message){errorEl.textContent=message;errorEl.classList.add('show');}
+function clearError(){errorEl.textContent='';errorEl.classList.remove('show');}
+function updateProgress(){
+  var total=allItems.length||1,done=allItems.filter(function(x){return x.status==='done'||x.status==='failed';}).length;
+  var ready=allItems.filter(function(x){return x.status==='done';}).length;
+  var percent=Math.round(done/total*100); var active=allItems.find(function(x){return x.status==='loading';})||allItems.find(function(x){return x.status==='pending';})||allItems[allItems.length-1];
+  if(active)fileEl.textContent=active.path;
+  countEl.textContent=done+'/'+total+' · '+percent+'%';bar.style.width=percent+'%';readyEl.textContent=ready+'/'+total+' files ready';
+  allItems.forEach(function(x){var li=document.getElementById('file-'+x.id);if(!li)return;li.className=(x===active?'active ':'')+(x.status==='done'?'done':x.status==='failed'?'failed':'');var state=li.querySelector('.state'),st=li.querySelector('.file-state');state.textContent=x.status==='done'?'✓':x.status==='failed'?'!':x.status==='loading'?'◌':'·';st.textContent=x.status==='done'?'Loaded':x.status==='failed'?'Failed':x.status==='loading'?'Loading…':'Waiting';});
+  if(active){var activeLi=document.getElementById('file-'+active.id);if(activeLi&&active===allItems.find(function(x){return x.status==='loading';}))activeLi.scrollIntoView({block:'nearest',behavior:'smooth'});}
+}
+function setStatus(head,sub){title.textContent=head;detail.textContent=sub;}
+function renderList(){listEl.innerHTML='';allItems.forEach(function(x){var li=document.createElement('li');li.id='file-'+x.id;li.innerHTML='<span class="state">·</span><span class="path"></span><span class="file-state">Waiting</span>';li.querySelector('.path').textContent=x.path;listEl.appendChild(li);});updateProgress();}
+function fetchText(url){var sep=url.indexOf('?')<0?'?':'&';return fetch(url+sep+'_launcher='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status+' from '+new URL(url).host);return r.text();});}
+function getText(){return fetchText(RAW_URL).catch(function(first){return fetchText(CDN_BASE+'index.html').catch(function(second){throw new Error('Could not download source index.html. GitHub Raw: '+first.message+'; CDN: '+second.message);});});}
+function cleanPath(raw){try{if(!/^[a-z]+:/i.test(raw)&&raw.indexOf('//')!==0)return decodeURIComponent(raw.split('?')[0].split('#')[0]);var u=new URL(raw,RAW_BASE),p=u.pathname;var marker='/'+REPO+'/';var i=p.indexOf(marker);if(i>=0){p=p.slice(i+marker.length);p=p.replace(/^refs\/heads\/[^/]+\//,'');}return decodeURIComponent(p||raw);}catch(e){return raw;}}
+function isTracked(el){if(el.tagName==='LINK'){var rel=(el.getAttribute('rel')||'').toLowerCase().split(/\s+/);return rel.indexOf('stylesheet')>=0||rel.indexOf('modulepreload')>=0||rel.indexOf('preload')>=0;}if(el.tagName==='SCRIPT')return !!el.getAttribute('src');return false;}
+function assetUrlFor(el,base,version){var attr=el.tagName==='LINK'?'href':'src';var raw=el.getAttribute(attr);var u=new URL(raw,base);if(u.origin===new URL(base).origin)u.searchParams.set('_suki_v',version);return u.href;}
+function buildDocument(html,base,token,version){
+  var doc=new DOMParser().parseFromString(html,'text/html');
+  var baseTag=doc.createElement('base');baseTag.href=base;
+  if(doc.head)doc.head.insertBefore(baseTag,doc.head.firstChild);else{var h=doc.createElement('head');h.appendChild(baseTag);doc.documentElement.insertBefore(h,doc.body||null);}
+  var nodes=Array.prototype.slice.call(doc.querySelectorAll('link[href],script[src]')).filter(isTracked);
+  resourceItems=[];allItems=[{id:0,path:'index.html',status:'done',kind:'html'}];
+  nodes.forEach(function(el,i){var attr=el.tagName==='LINK'?'href':'src';var original=el.getAttribute(attr);var path=cleanPath(original);var item={id:i+1,path:path,status:'pending',kind:el.tagName==='LINK'?'css':'js'};resourceItems.push(item);allItems.push(item);el.setAttribute('data-suki-file',path);el.setAttribute('data-suki-token',token);el.setAttribute(attr,assetUrlFor(el,base,version));});
+  var monitor="(function(){var T="+JSON.stringify(token)+";function send(p,s){try{parent.postMessage({__sukiAssetTracker:T,path:p,status:s},'*')}catch(e){}}function hit(e){var n=e.target;if(!n||!n.getAttribute)return;var p=n.getAttribute('data-suki-file'),t=n.getAttribute('data-suki-token');if(p&&t===T)send(p,e.type==='error'?'failed':'done')}document.addEventListener('load',hit,true);document.addEventListener('error',hit,true);})();";
+  var bridge=doc.createElement('script');bridge.setAttribute('data-suki-bridge','1');bridge.textContent=monitor;
+  if(doc.head)doc.head.insertBefore(bridge,baseTag.nextSibling);else doc.documentElement.insertBefore(bridge,doc.documentElement.firstChild);
+  // The app's ordinary inline code and external file tags remain intact; this only adds tracking metadata.
+  return '<!doctype html>\n'+doc.documentElement.outerHTML;
+}
+function setResourceStatus(path,status,token){if(token!==currentToken)return;var item=resourceItems.find(function(x){return x.path===path;});if(!item)return;if(item.status==='done'||item.status==='failed')return;item.status=status;assetEventCount++;updateProgress();}
+window.addEventListener('message',function(e){var d=e.data;if(!d||!d.__sukiAssetTracker||d.__sukiAssetTracker!==currentToken)return;if(d.path&&d.status)setResourceStatus(d.path,d.status,d.__sukiAssetTracker);});
+function resetAssetStatuses(){allItems.forEach(function(x){if(x.kind!=='html')x.status='pending';});updateProgress();}
+function beginRender(html,baseIndex,strategyIndex){
+  clearTimeout(timeoutId);clearTimeout(finishTimer);activeBase=baseIndex;activeStrategy=strategyIndex;attemptNo++;var token='suki-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);currentToken=token;var base=baseIndex===0?RAW_BASE:CDN_BASE;var prepared;
+  assetEventCount=0;resetAssetStatuses();
+  try{prepared=buildDocument(html,base,token,(currentSha||Date.now().toString()));renderList();}catch(err){setStatus('Could not prepare app','Could not parse the source HTML.');setError(err.message);retry.disabled=false;return;}
+  // Only one source document should be active at a time. If a render method is blocked, try the next supported method.
+  var strategy=STRATEGIES[strategyIndex];var previousBlob=currentBlobUrl;var blobUrl=null;var wrote=false;var violationsAtStart=frameViolations;var renderDone=false;
+  setStatus('Loading app files…','Found '+resourceItems.length+' linked CSS/JavaScript files. Downloading them through the app frame.');fileEl.textContent='index.html';updateProgress();
+  function verify(){if(renderDone)return;renderDone=true;clearTimeout(timeoutId);setTimeout(function(){if(token!==currentToken)return;var blocked=frameViolations>violationsAtStart;var browserError=false;try{var href=frame.contentWindow.location.href;if(/^chrome-error:/i.test(href))browserError=true;}catch(e){/* opaque origins are expected on some hosted builders */}
+    if(!blocked&&!browserError){if(previousBlob&&previousBlob!==blobUrl)try{URL.revokeObjectURL(previousBlob);}catch(e){}currentBlobUrl=blobUrl;activeStrategy=strategyIndex;finishFrameLoad(token);return;}
+    if(blobUrl)try{URL.revokeObjectURL(blobUrl);}catch(e){}tryNextStrategy(html,baseIndex,strategyIndex+1);
+  },180);}
+  frame.onload=verify;
+  if(strategy==='blob'){
+    try{blobUrl=URL.createObjectURL(new Blob([prepared],{type:'text/html'}));frame.removeAttribute('srcdoc');frame.src=blobUrl;currentBlobUrl=blobUrl;}
+    catch(e){tryNextStrategy(html,baseIndex,strategyIndex+1);return;}
+  }else if(strategy==='srcdoc'){
+    try{frame.removeAttribute('src');frame.srcdoc=prepared;}catch(e){tryNextStrategy(html,baseIndex,strategyIndex+1);return;}
+  }else{
+    frame.removeAttribute('srcdoc');frame.onload=function(){if(!wrote){wrote=true;try{var d=frame.contentDocument;d.open();d.write(prepared);d.close();}catch(e){verify();}return;}verify();};frame.src='about:blank';timeoutId=setTimeout(function(){if(!wrote)verify();},1600);
+  }
+  timeoutId=setTimeout(function(){if(token===currentToken&&!renderDone){renderDone=true;tryNextStrategy(html,baseIndex,strategyIndex+1);}},12000);
+}
+function tryNextStrategy(html,baseIndex,nextStrategy){if(nextStrategy<STRATEGIES.length){beginRender(html,baseIndex,nextStrategy);return;}if(baseIndex===0){setStatus('Trying backup file host…','The first host/embedding method was blocked or assets failed. Switching the same app files to jsDelivr.');beginRender(html,1,0);return;}showFailure('The app frame or one or more app assets were blocked by the browser/host. Try opening this launcher as a hosted page, or use the “Open source app” link.');}
+function finishFrameLoad(token){if(token!==currentToken)return;clearTimeout(timeoutId);clearTimeout(finishTimer);var notReported=resourceItems.filter(function(x){return x.status==='pending'||x.status==='loading';});
+  // A frame load fires after its linked resource requests have completed. Give bridge messages time to arrive first.
+  if(notReported.length){notReported.forEach(function(x){if(x.status==='pending')x.status='loading';});updateProgress();finishTimer=setTimeout(function(){if(token!==currentToken)return;var remaining=resourceItems.filter(function(x){return x.status==='pending'||x.status==='loading';});if(remaining.length){if(assetEventCount===0&&activeBase===0&&!assetFallbackTried){assetFallbackTried=true;setStatus('Switching file host…','The browser did not report the first host’s asset events. Retrying through jsDelivr.');beginRender(currentHtml,1,0);return;}var initialized=false,inspectable=false;try{var d=frame.contentDocument;if(d){inspectable=true;var tabs=d.querySelector('#tabs');initialized=!!(tabs&&(tabs.children.length>0||tabs.textContent.trim().length>0));}}catch(e){}remaining.forEach(function(x){x.status=(initialized||!inspectable)?'done':'failed';});updateProgress();}finalizeLoad(token);},650);return;}finalizeLoad(token);
+}
+function finalizeLoad(token){if(token!==currentToken)return;var failed=resourceItems.filter(function(x){return x.status==='failed';});if(failed.length&&activeBase===0&&!assetFallbackTried){assetFallbackTried=true;setStatus('Switching file host…','Some files failed on GitHub Raw. Retrying the app files through jsDelivr.');beginRender(currentHtml,1,0);return;}
+  var goodScripts=resourceItems.filter(function(x){return x.kind==='js'&&x.status==='done';}).length;
+  if(failed.length){setStatus('Loaded with file errors','The app may be incomplete because some source assets failed.');setError('Failed file(s): '+failed.map(function(x){return x.path;}).join(', ')+'. Check whether the host blocks these external files, then press Try again.');dot.style.background='#fda4af';dot.style.boxShadow='0 0 15px #fda4af';if(!goodScripts){showFailure('The JavaScript files did not load, so the app cannot initialize. Failed file(s): '+failed.map(function(x){return x.path;}).join(', ')+'. Try again or use the source app link.');return;}}
+  else{setStatus('App ready','All '+resourceItems.length+' linked CSS/JavaScript files reported as loaded.');dot.style.background='#86efac';dot.style.boxShadow='0 0 15px #86efac';}
+  var total=allItems.length,done=allItems.filter(function(x){return x.status==='done'||x.status==='failed';}).length;fileEl.textContent=failed.length?'App interface (some files failed)':'Initialize app interface';countEl.textContent=done+'/'+total+' · '+Math.round(done/total*100)+'%';bar.style.width=Math.round(done/total*100)+'%';readyEl.textContent=allItems.filter(function(x){return x.status==='done';}).length+'/'+total+' files ready';
+  frame.classList.add('ready');revealed=true;setTimeout(function(){splash.classList.add('gone');},230);retry.disabled=false;
+}
+function showFailure(message){clearTimeout(timeoutId);clearTimeout(finishTimer);setStatus('Could not start app','The source app could not be loaded. Use Try again to retry.');setError(message);dot.style.background='#fda4af';dot.style.boxShadow='0 0 15px #fda4af';retry.disabled=false;}
+function parseAndRender(html,force){var hash=hashText(html);if(!force&&hash===currentHash)return;currentHash=hash;currentHtml=html;assetFallbackTried=false;beginRender(html,0,activeStrategy<STRATEGIES.length?activeStrategy:0);}
+function hashText(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return(h>>>0).toString(16)+':'+s.length;}
+function load(force){if(loading){loadAgain=loadAgain||force;return Promise.resolve();}loading=true;retry.disabled=true;clearError();dot.style.background='var(--accent)';dot.style.boxShadow='0 0 15px var(--accent)';setStatus('Connecting to source…','Fetching index.html from GitHub and discovering every linked CSS/JavaScript file.');fileEl.textContent='index.html';return getText().then(function(html){var h=hashText(html);if(force||h!==currentHash){currentHash=h;currentHtml=html;parseAndRender(html,true);}else{setStatus('App is up to date','No changes to index.html were detected.');} }).catch(function(e){if(!currentHash)showFailure(e.message);else console.warn('Source update check failed:',e);}).then(function(){loading=false;retry.disabled=false;if(loadAgain){var f=loadAgain;loadAgain=false;load(f);}});}
+function checkCommit(){return fetch(COMMIT_API,{cache:'no-store',headers:{Accept:'application/vnd.github+json'}}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(function(j){if(!j||!j.sha)return;if(currentSha&&j.sha!==currentSha){currentSha=j.sha;load(true);}else currentSha=j.sha;}).catch(function(){/* raw index polling still works if API is rate-limited */});}
+retry.addEventListener('click',function(){frame.classList.remove('ready');splash.classList.remove('gone');load(true);});
+load(true).then(checkCommit);
+setInterval(function(){if(!document.hidden)load(false);},POLL_FILE_MS);
+setInterval(function(){if(!document.hidden)checkCommit();},POLL_COMMIT_MS);
+document.addEventListener('visibilitychange',function(){if(!document.hidden){load(false);checkCommit();}});
+window.addEventListener('online',function(){load(false);});
+})();
+</script>
+</body>
+</html>
