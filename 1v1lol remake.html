@@ -1,4 +1,5 @@
 
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -45,7 +46,7 @@ h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.055em;line-height:1.12;margin
       <div class="asset-list" id="assetList"></div>
     </div>
     <div class="error" id="error" hidden></div>
-    <div class="actions"><button class="loader-button" id="retry" type="button">↻ Retry loading</button><a class="loader-button secondary" href="https://github.com/AniItsukiCoded/1v1-lol-remake" target="_blank" rel="noopener noreferrer">Open source repository ↗</a></div>
+    <div class="actions"><button class="loader-button" id="retry" type="button">↻ Retry loading</button><button class="loader-button secondary" id="force" type="button" title="Skips the GitHub API and loads through the jsDelivr CDN">⚡ Force load (rate limited)</button><a class="loader-button secondary" href="https://github.com/AniItsukiCoded/1v1-lol-remake" target="_blank" rel="noopener noreferrer">Open source repository ↗</a></div>
     <p class="hint">Source: <a href="https://raw.githubusercontent.com/AniItsukiCoded/1v1-lol-remake/refs/heads/main/index.html" target="_blank" rel="noopener noreferrer">raw index.html</a> · All files are fetched from the repo tree with CDN fallback. Firebase authentication and matchmaking still depend on the repository’s Firebase project settings and the domain hosting this launcher.</p>
   </section>
 </div>
@@ -113,7 +114,50 @@ h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.055em;line-height:1.12;margin
     return response.json();
   }
 
+  const TREE_CACHE_KEY = `repoTree:${OWNER}/${REPO}`;
+  let forceMode = /[?&]force(?:=1|=true|&|$)/i.test(location.search);
+  let updateChecksDisabled = false;
+
+  function saveTreeCache(paths) {
+    try { localStorage.setItem(TREE_CACHE_KEY, JSON.stringify({ time: Date.now(), paths })); } catch (_) {}
+  }
+  function loadTreeCache() {
+    try {
+      const data = JSON.parse(localStorage.getItem(TREE_CACHE_KEY) || 'null');
+      if (data && Array.isArray(data.paths) && data.paths.includes('index.html')) return data.paths;
+    } catch (_) {}
+    return null;
+  }
+
+  // File listing that does NOT use api.github.com, so GitHub API rate limits
+  // (60 requests/hour per IP when unauthenticated) cannot block it.
+  async function discoverTreeViaCdn() {
+    const response = await fetchResponse(`https://data.jsdelivr.com/v1/packages/gh/${OWNER}/${REPO}@${BRANCH}?structure=flat`, 15000);
+    const data = await response.json();
+    if (!data || !Array.isArray(data.files) || !data.files.length) throw new Error('jsDelivr returned no file list.');
+    return data.files.map(file => String(file.name || '').replace(/^\/+/, '')).filter(Boolean);
+  }
+
+  async function discoverTreeWithoutApi(reason) {
+    repoVersion = BRANCH;
+    loadedCommitSha = '';
+    updateChecksDisabled = true;
+    try {
+      const paths = await discoverTreeViaCdn();
+      saveTreeCache(paths);
+      return paths;
+    } catch (cdnError) {
+      const cached = loadTreeCache();
+      if (cached) return cached;
+      throw new Error(`Could not discover repository files without the GitHub API. ${reason ? reason + ' ' : ''}jsDelivr listing: ${cdnError?.message || cdnError}`);
+    }
+  }
+
   async function discoverTree() {
+    if (forceMode) {
+      // Force load: skip api.github.com entirely.
+      return discoverTreeWithoutApi('');
+    }
     let discoveryError = null;
     // Pin the file tree and raw downloads to one commit so a push midway through
     // launch cannot mix unrelated versions of index.html, CSS, and JavaScript.
@@ -125,7 +169,9 @@ h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.055em;line-height:1.12;margin
       if (!Array.isArray(tree.tree)) throw new Error('GitHub did not return a repository file tree.');
       repoVersion = commit.sha;
       loadedCommitSha = commit.sha;
-      return tree.tree.filter(item => item.type === 'blob' && item.path).map(item => item.path);
+      const paths = tree.tree.filter(item => item.type === 'blob' && item.path).map(item => item.path);
+      saveTreeCache(paths);
+      return paths;
     } catch (error) { discoveryError = error; }
 
     // If the commit endpoint is temporarily unavailable, try the public tree
@@ -134,9 +180,13 @@ h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.055em;line-height:1.12;margin
       const tree = await fetchJson(`${API_ROOT}/git/trees/${BRANCH}?recursive=1`);
       if (tree.truncated || !Array.isArray(tree.tree)) throw new Error('GitHub returned an incomplete file tree.');
       repoVersion = BRANCH;
-      return tree.tree.filter(item => item.type === 'blob' && item.path).map(item => item.path);
+      const paths = tree.tree.filter(item => item.type === 'blob' && item.path).map(item => item.path);
+      saveTreeCache(paths);
+      return paths;
     } catch (error) {
-      throw new Error(`Could not discover every repository file. Commit/tree request: ${discoveryError?.message || discoveryError}. Branch-tree fallback: ${error?.message || error}`);
+      // GitHub API unavailable or rate limited: fall back automatically.
+      note('GitHub API unavailable — using CDN file listing instead.', 4000);
+      return discoverTreeWithoutApi(`Commit/tree request: ${discoveryError?.message || discoveryError}. Branch-tree fallback: ${error?.message || error}.`);
     }
   }
 
@@ -233,12 +283,12 @@ h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.055em;line-height:1.12;margin
 
   async function fetchRepoFile(path) {
     const encoded = encodePath(path);
-    const urls = [
-      `https://raw.githubusercontent.com/${OWNER}/${REPO}/${repoVersion}/${encoded}`,
-      `https://raw.githubusercontent.com/${OWNER}/${REPO}/refs/heads/${BRANCH}/${encoded}`,
-      `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${encodeURIComponent(repoVersion)}/${encoded}`,
-      `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/${encoded}`
-    ];
+    const rawA = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${repoVersion}/${encoded}`;
+    const rawB = `https://raw.githubusercontent.com/${OWNER}/${REPO}/refs/heads/${BRANCH}/${encoded}`;
+    const cdnA = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${encodeURIComponent(repoVersion)}/${encoded}`;
+    const cdnB = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/${encoded}`;
+    // In force mode, try the CDN first so a rate-limited raw.githubusercontent.com is not hit.
+    const urls = forceMode ? [cdnA, cdnB, rawA, rawB] : [rawA, rawB, cdnA, cdnB];
     const errors = [];
     for (const url of urls) {
       try {
@@ -494,7 +544,7 @@ h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.055em;line-height:1.12;margin
   async function launch() {
     if (busy) return;
     busy = true;
-    $('retry').disabled = true;
+    $('retry').disabled = true; $('force').disabled = true;
     clearError();
     $('loading').classList.remove('hidden');
     $('statusDot').style.background = 'var(--accent)';
@@ -529,7 +579,7 @@ h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.055em;line-height:1.12;margin
       updateMeter();
     } finally {
       busy = false;
-      $('retry').disabled = false;
+      $('retry').disabled = false; $('force').disabled = false;
     }
   }
 
@@ -568,13 +618,20 @@ h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.055em;line-height:1.12;margin
   }
 
   async function checkForUpdates() {
+    // Without a known baseline commit (force/CDN mode) there is nothing to compare against,
+    // and checking would reload forever, so update checks stay off.
+    if (updateChecksDisabled || !loadedCommitSha) return;
     if (busy || checkingForUpdates || document.visibilityState !== 'visible') return;
     checkingForUpdates = true;
     try {
-      const commit = await fetchJson(`${API_ROOT}/commits/${BRANCH}`);
+      const response = await fetch(`${API_ROOT}/commits/${BRANCH}`, { cache: 'no-store', headers: { 'Accept': 'application/vnd.github+json' } });
+      // Rate limited: stop polling for the rest of this session instead of burning more requests.
+      if (response.status === 403 || response.status === 429) { updateChecksDisabled = true; return; }
+      if (!response.ok) return;
+      const commit = await response.json();
       const latestSha = commit && commit.sha;
       if (!latestSha) return;
-      if (loadedCommitSha && latestSha === loadedCommitSha) return;
+      if (latestSha === loadedCommitSha) return;
       // If the initial commit lookup was unavailable, reload once the API works
       // again so the next launch can establish a trustworthy version baseline.
       const hud = document.getElementById('hud');
@@ -591,14 +648,18 @@ h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.055em;line-height:1.12;margin
     }
   }
 
-  $('retry').addEventListener('click', launch);
-  launch();
-  // Rescan the branch periodically. A changed commit triggers a reload outside
-  // a match; during a match we show an update button so gameplay isn't interrupted.
-  setInterval(checkForUpdates, 60000);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') checkForUpdates();
+  $('retry').addEventListener('click', () => launch());
+  $('force').addEventListener('click', () => {
+    if (busy) return;
+    forceMode = true;
+    updateChecksDisabled = true;
+    launch();
   });
+  launch();
+  // Rescan the branch every 5 minutes (was every minute, which alone used the
+  // whole 60/hour GitHub API allowance). A changed commit triggers a reload outside
+  // a match; during a match we show an update button so gameplay isn't interrupted.
+  setInterval(checkForUpdates, 300000);
 })();
 </script>
 </body>
