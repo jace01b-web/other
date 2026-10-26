@@ -1,5 +1,3 @@
-
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -294,9 +292,11 @@ h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.055em;line-height:1.12;margin
       try {
         const response = await fetchResponse(url, 20000);
         const bytes = await response.arrayBuffer();
-        if (!bytes.byteLength && path !== 'README.md') throw new Error(`The downloaded file is empty: ${path}`);
+        // An empty source file is valid; warn instead of aborting the whole launch.
+        const empty = !bytes.byteLength;
+        if (empty && path !== 'README.md') console.warn(`[launcher] ${path} is empty in the repository (0 bytes). Re-upload it with content if the game needs it.`);
         const text = isTextPath(path) ? new TextDecoder('utf-8', {fatal:false}).decode(bytes) : null;
-        return { bytes, text, sourceUrl:url, mime:mimeForPath(path) };
+        return { bytes, text, sourceUrl:url, mime:mimeForPath(path), empty };
       } catch (error) { errors.push(error?.message || String(error)); }
     }
     throw new Error(`Unable to fetch ${path}. ${errors.slice(0,4).join(' | ')}`);
@@ -315,6 +315,7 @@ h1{font-size:clamp(28px,5vw,38px);letter-spacing:-.055em;line-height:1.12;margin
         try {
           const record = await fetchRepoFile(path);
           fileCache.set(path, record);
+          if (record.empty && path !== 'README.md') note(`${path} is empty in the repo (0 bytes)`, 6000);
           const row = rowMap.get(path);
           if (row) row.dataset.loaded = 'true';
           setFileState(path, 'done', 'Fetched');
