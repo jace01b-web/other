@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -710,6 +709,21 @@ summary::-webkit-details-marker{display:none}
       else if (target && typeof target === 'object' && target.targetOrigin === 'null') target = Object.assign({}, target, {targetOrigin: '*'});
       return nativePM.call(this, message, target, transfer);
     };
+    // When this page is itself inside a sandboxed iframe (e.g. launched from another site via srcdoc) the game posts to
+    // window.parent with location.origin === 'null', which the host window rejects. Hand the game a wrapped parent whose
+    // postMessage maps that invalid 'null' target to '*'.
+    try {
+      const realParent = window.parent;
+      if (realParent && realParent !== window) {
+        const fixTarget = t => (t === 'null') ? '*' : (t && typeof t === 'object' && t.targetOrigin === 'null') ? Object.assign({}, t, {targetOrigin: '*'}) : t;
+        const parentPM = function (message, target, transfer) { return realParent.postMessage(message, fixTarget(target), transfer); };
+        const wrappedParent = new Proxy(realParent, {
+          get: (t, k) => { if (k === 'postMessage') return parentPM; const v = Reflect.get(t, k, t); return typeof v === 'function' ? v.bind(t) : v; },
+          set: (t, k, v) => { t[k] = v; return true; }
+        });
+        Object.defineProperty(window, 'parent', {configurable: true, get: () => wrappedParent});
+      }
+    } catch (_) {}
     const NativeAudio = window.Audio;
     window.Audio = function (src) { const a = new NativeAudio(); if (src !== undefined) a.src = String(src); return a; };
     window.Audio.prototype = NativeAudio.prototype;
