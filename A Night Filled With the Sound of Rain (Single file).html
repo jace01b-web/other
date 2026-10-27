@@ -340,6 +340,7 @@ summary::-webkit-details-marker{display:none}
   // The game's scripts are injected AFTER the page already finished loading, so anything waiting for
   // DOMContentLoaded / load (or window.onload / <body onload>) would never run. Capture those and fire them ourselves.
   const deferredEvents = []; let lifecycleFlushed = false, onloadFn = null;
+  let pendingScripts = 0, pendingXhr = 0;   // game scripts / XHRs still in flight (a real 'load' event waits for these)
   function installLifecycleShim() {
     const wrap = (target, orig) => function (type, fn, opts) {
       if (fn && (type === 'DOMContentLoaded' || (type === 'load' && target === window))) {
@@ -371,6 +372,8 @@ summary::-webkit-details-marker{display:none}
   }
   const OPTIONAL_SCRIPTS = /(cloudflareinsights\.com|google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|plausible\.io|clarity\.ms|hotjar\.com|mixpanel\.com|segment\.(?:com|io)|umami|statcounter\.com|fullstory\.com|beacon\.min\.js)/i;
   let ENTRY = 'index.html';
+  let mountStarted = false;            // true once the game's own scripts began running in this page
+  const reverseBlob = new Map();      // blob url -> repo path (for readable error traces)
   let forceMode = /[?&]force(?:=1|=true|&|$)/i.test(location.search);
   let updateChecksDisabled = false;
 
@@ -568,10 +571,10 @@ summary::-webkit-details-marker{display:none}
       return cleanPath(dec.replace(/^\/+/, '')) || ENTRY;
     } catch (_) { return null; }
   }
-  function clearBlobUrls() { for (const u of blobUrls.values()) URL.revokeObjectURL(u); blobUrls.clear(); }
+  function clearBlobUrls() { for (const u of blobUrls.values()) URL.revokeObjectURL(u); blobUrls.clear(); reverseBlob.clear(); }
   function createBlobUrls() {
     clearBlobUrls();
-    for (const [path, f] of fileCache) blobUrls.set(path, URL.createObjectURL(new Blob([f.bytes], {type: f.mime || mimeForPath(path)})));
+    for (const [path, f] of fileCache) { const u = URL.createObjectURL(new Blob([f.bytes], {type: f.mime || mimeForPath(path)})); blobUrls.set(path, u); reverseBlob.set(u, path); }
   }
   const isExternalReference = v => /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|data:|blob:|var\()/i.test(String(v || '').trim());
   function resolveAssetUrl(reference, fromPath) {
@@ -603,7 +606,21 @@ summary::-webkit-details-marker{display:none}
 
   // Games often load things by relative path at runtime (fetch / XHR / new Image()).
   // Those would resolve against THIS launcher's address, so point them at the downloaded files instead.
+  // about:blank / sandboxed tabs have an opaque origin: localStorage & IndexedDB throw there, and RPG Maker's localforage then
+  // dies with “No available storage method found”. Give the game an in-memory localStorage so it can still run
+  // (saves just won't survive closing that tab).
+  function installStorageFallback() {
+    try { localStorage.setItem('__launcher_t', '1'); localStorage.removeItem('__launcher_t'); return; } catch (_) {}
+    const mk = () => {
+      const m = new Map();
+      return {getItem: k => m.has(String(k)) ? m.get(String(k)) : null, setItem: (k, v) => { m.set(String(k), String(v)); }, removeItem: k => { m.delete(String(k)); },
+        clear: () => m.clear(), key: i => { const a = [...m.keys()]; return i < a.length ? a[i] : null; }, get length() { return m.size; }};
+    };
+    for (const name of ['localStorage', 'sessionStorage']) { try { Object.defineProperty(window, name, {configurable: true, value: mk()}); } catch (_) {} }
+    note('Heads up: this tab can’t store saves, so progress is lost when you close it. Open the launcher from localhost or a normal page to keep saves.', 12000);
+  }
   function installRuntimeRedirects() {
+    installStorageFallback();
     const entryDir = dirOf(ENTRY);
     let launcherDir = location.pathname.replace(/[^/]*$/, '');
     try { launcherDir = decodeURIComponent(launcherDir); } catch (_) {}
@@ -615,15 +632,23 @@ summary::-webkit-details-marker{display:none}
       for (const k of keys) { if (p === k || p.endsWith('/' + k) || (p.includes('/') && k.endsWith('/' + p))) { hit = k; break; } }
       suffixCache.set(p, hit); return hit;
     };
-    // Maps same-origin relative requests (which would hit the launcher's own address, e.g. file:///C:/Users/…)
-    // to the downloaded blob; if a file somehow isn't in the blob store, falls back to the pinned CDN copy.
+    // Maps relative requests (which would hit the launcher's own address, e.g. file:///C:/Users/… or about:blank)
+    // and URLs that resolved against the repo CDN base to the downloaded blob. Falls back to the pinned CDN copy.
+    const cdnPrefix = cdnRoot(), cdnPrefixUrl = new URL(cdnPrefix);
+    const hasRealBase = /^(?:https?|file):/i.test(location.protocol);
+    const safeDecode = x => { try { return decodeURIComponent(x); } catch (_) { return x; } };
     const mapUrl = input => {
       try {
         const raw = typeof input === 'string' ? input : (input && input.url) || String(input);
         if (!raw || /^(?:data:|blob:|about:|javascript:|mailto:)/i.test(raw)) return null;
-        const u = new URL(raw, location.href);
+        const u = new URL(raw, hasRealBase ? location.href : cdnPrefix + entryDir);
+        if (u.origin === cdnPrefixUrl.origin && u.pathname.startsWith(cdnPrefixUrl.pathname)) {
+          const p = cleanPath(safeDecode(u.pathname.slice(cdnPrefixUrl.pathname.length)));
+          const key = blobUrls.has(p) ? p : suffixMatch(p);
+          return key ? blobUrls.get(key) + (u.hash || '') : null;
+        }
         if (u.protocol !== location.protocol || u.host !== location.host) return null;
-        let p; try { p = decodeURIComponent(u.pathname); } catch (_) { p = u.pathname; }
+        let p = safeDecode(u.pathname);
         if (p.startsWith(launcherDir)) p = p.slice(launcherDir.length);
         p = cleanPath(p);
         if (!p) return null;
@@ -640,20 +665,60 @@ summary::-webkit-details-marker{display:none}
     };
     const origOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function (method, url, ...rest) { const m = mapUrl(String(url)); return origOpen.call(this, method, m || url, ...rest); };
+    // Plugins read their own name from document.currentScript.src (…/js/plugins/Name.js). A blob: URL has no file name,
+    // so a script that runs from the downloaded copy reports the real repo URL as its src instead.
+    const markScript = (el, mapped) => {
+      if (!el || el.tagName !== 'SCRIPT') return;
+      const path = mapped ? reverseBlob.get(String(mapped).split('#')[0]) : null;
+      if (path) el.__fakeSrc = cdnUrl(path);
+      if (!lifecycleFlushed && !el.__tracked) {
+        el.__tracked = true; pendingScripts++;
+        const done = () => { pendingScripts = Math.max(0, pendingScripts - 1); };
+        el.addEventListener('load', done, {once: true}); el.addEventListener('error', done, {once: true});
+      }
+    };
     const patchSrc = (Ctor, prop) => {
       const d = Object.getOwnPropertyDescriptor(Ctor.prototype, prop);
       if (!d || !d.set) return;
-      Object.defineProperty(Ctor.prototype, prop, {configurable: true, enumerable: d.enumerable, get: d.get, set(v) { const m = typeof v === 'string' ? mapUrl(v) : null; d.set.call(this, m || v); }});
+      Object.defineProperty(Ctor.prototype, prop, {configurable: true, enumerable: d.enumerable, get: d.get, set(v) { const m = typeof v === 'string' ? mapUrl(v) : null; if (this.tagName === 'SCRIPT') markScript(this, m); d.set.call(this, m || v); }});
     };
+    const origSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function (...a) {
+      if (!lifecycleFlushed) { pendingXhr++; this.addEventListener('loadend', () => { pendingXhr = Math.max(0, pendingXhr - 1); }, {once: true}); }
+      return origSend.apply(this, a);
+    };
+    const csDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'currentScript');
+    if (csDesc && csDesc.get) Object.defineProperty(document, 'currentScript', {configurable: true, get() {
+      const el = csDesc.get.call(document);
+      if (!el || !el.__fakeSrc) return el;
+      return el.__fakeProxy || (el.__fakeProxy = new Proxy(el, {
+        get: (t, k) => { if (k === 'src') return t.__fakeSrc; const v = Reflect.get(t, k, t); return typeof v === 'function' ? v.bind(t) : v; },
+        set: (t, k, v) => { t[k] = v; return true; }
+      }));
+    }});
     patchSrc(HTMLImageElement, 'src'); patchSrc(HTMLMediaElement, 'src'); patchSrc(HTMLSourceElement, 'src'); patchSrc(HTMLScriptElement, 'src'); patchSrc(HTMLLinkElement, 'href');
     const origSetAttr = Element.prototype.setAttribute;
     Element.prototype.setAttribute = function (name, value) {
-      if (typeof value === 'string' && /^(src|href|poster|data)$/i.test(name) && /^(IMG|AUDIO|VIDEO|SOURCE|SCRIPT|LINK|OBJECT|EMBED|TRACK)$/.test(this.tagName)) { const m = mapUrl(value); if (m) value = m; }
+      if (typeof value === 'string' && /^(src|href|poster|data)$/i.test(name) && /^(IMG|AUDIO|VIDEO|SOURCE|SCRIPT|LINK|OBJECT|EMBED|TRACK)$/.test(this.tagName)) { const m = mapUrl(value); if (this.tagName === 'SCRIPT' && /^src$/i.test(name)) markScript(this, m); if (m) value = m; }
       return origSetAttr.call(this, name, value);
+    };
+    // In about:blank / sandboxed tabs location.origin is the string 'null', which postMessage rejects as a target origin.
+    const nativePM = window.postMessage;
+    window.postMessage = function (message, target, transfer) {
+      if (target === 'null') target = '*';
+      else if (target && typeof target === 'object' && target.targetOrigin === 'null') target = Object.assign({}, target, {targetOrigin: '*'});
+      return nativePM.call(this, message, target, transfer);
     };
     const NativeAudio = window.Audio;
     window.Audio = function (src) { const a = new NativeAudio(); if (src !== undefined) a.src = String(src); return a; };
     window.Audio.prototype = NativeAudio.prototype;
+    const NativeFontFace = window.FontFace;
+    if (NativeFontFace) window.FontFace = class extends NativeFontFace {
+      constructor(family, source, desc) {
+        if (typeof source === 'string') source = source.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/gi, (all, q, ref) => { const m = mapUrl(ref); return m ? `url("${m}")` : all; });
+        super(family, source, desc);
+      }
+    };
     const NativeWorker = window.Worker;
     if (NativeWorker) window.Worker = class extends NativeWorker { constructor(url, opts) { super(typeof url === 'string' ? (mapUrl(url) || url) : url, opts); } };
   }
@@ -665,11 +730,7 @@ summary::-webkit-details-marker{display:none}
       if (!src) return {path: `${pagePath} (inline script)`, code: node.textContent || '', attrs};
       const lp = resolveLocalPath(src, pagePath);
       if (lp && fileCache.has(lp) && String(attrs.type || '').toLowerCase() === 'module') return {path: lp, src: cdnUrl(lp), attrs};
-      if (lp && fileCache.has(lp)) {
-        const rec = fileCache.get(lp);
-        if (rec.text === null) throw new Error(`Script ${lp} is not a text file.`);
-        return {path: lp, code: rec.text, attrs};
-      }
+      if (lp && fileCache.has(lp) && blobUrls.has(lp)) return {path: lp, src: blobUrls.get(lp), attrs, local: true};
       let ext = src;
       if (lp) ext = cdnUrl(lp); else { try { ext = new URL(src, cdnRoot() + dirOf(pagePath)).href; } catch (_) {} }
       return {path: ext, src: ext, attrs};
@@ -682,10 +743,12 @@ summary::-webkit-details-marker{display:none}
       if (plan.attrs?.integrity) s.integrity = plan.attrs.integrity;
       if (plan.attrs?.crossorigin) s.crossOrigin = plan.attrs.crossorigin;
       s.async = false;
-      const t = setTimeout(() => { s.remove(); reject(new Error(`Timed out loading ${plan.src}`)); }, 25000);
+      const loadFail = msg => Object.assign(new Error(msg), {loadFailure: true});
+      const t = setTimeout(() => { s.remove(); reject(loadFail(`Timed out loading ${plan.path}`)); }, 25000);
       s.onload = () => { clearTimeout(t); resolve(); };
-      s.onerror = () => { clearTimeout(t); reject(new Error(`Failed to load ${plan.src}`)); };
+      s.onerror = () => { clearTimeout(t); reject(loadFail(`Failed to load ${plan.path}`)); };
       currentExecuting = plan.path; lastInjectedError = null;
+      if (plan.local) s.__fakeSrc = cdnUrl(plan.path);
       s.src = plan.src; document.body.appendChild(s);
     });
     await new Promise(r => setTimeout(r, 0));
@@ -702,6 +765,64 @@ summary::-webkit-details-marker{display:none}
     await new Promise(r => setTimeout(r, 0));
     const err = lastInjectedError; currentExecuting = ''; lastInjectedError = null;
     if (err) throw err;
+  }
+
+  // A real 'load' event waits for every dynamically added script; replicate that so the game's own load handler runs on time.
+  function waitForQuiet(maxMs) {
+    return new Promise(resolve => {
+      const t0 = performance.now(); let calm = 0;
+      const tick = () => {
+        calm = (pendingScripts === 0 && pendingXhr === 0) ? calm + 1 : 0;
+        if (calm >= 3 || performance.now() - t0 > maxMs) return resolve();
+        setTimeout(tick, 100);
+      };
+      setTimeout(tick, 100);
+    });
+  }
+  function waitForGame(maxMs) {
+    return new Promise(resolve => {
+      const t0 = performance.now();
+      const tick = () => {
+        const c = document.querySelector('body canvas:not(#rain)');
+        if (c || performance.now() - t0 > maxMs) return resolve();
+        setTimeout(tick, 150);
+      };
+      setTimeout(tick, 400);
+    });
+  }
+
+  // Small, dismissible box that names the real file + line when the game throws (blob urls are translated back to repo paths).
+  function prettyTrace(text) {
+    return String(text || '').replace(/blob:[^\s)'"]+/g, m => {
+      const mm = m.match(/^(.*?)(:\d+(?::\d+)?)?$/); const path = reverseBlob.get(mm[1]);
+      return path ? path + (mm[2] || '') : m;
+    });
+  }
+  let debugShown = 0;
+  function reportGameError(title, detail) {
+    if (/[?&]nodebug/i.test(location.search) || debugShown >= 4) return;
+    debugShown++;
+    let box = document.getElementById('launcherDebug');
+    if (!box) {
+      box = document.createElement('div'); box.id = 'launcherDebug';
+      Object.assign(box.style, {position:'fixed',left:'10px',bottom:'10px',zIndex:'2147483647',maxWidth:'min(640px,calc(100vw - 20px))',maxHeight:'40vh',overflow:'auto',
+        padding:'10px 12px',borderRadius:'12px',background:'rgba(14,8,28,.94)',border:'1px solid #ff9fb466',color:'#ffd9e2',font:'11px/1.5 ui-monospace,Consolas,monospace',whiteSpace:'pre-wrap',overflowWrap:'anywhere',userSelect:'text'});
+      const x = document.createElement('div'); x.textContent = 'launcher debug · click to dismiss'; x.style.cssText = 'cursor:pointer;color:#ff9fb4;margin-bottom:6px;font-weight:700';
+      x.addEventListener('click', () => box.remove()); box.appendChild(x);
+      document.body.appendChild(box);
+    }
+    const item = document.createElement('div'); item.style.cssText = 'margin-top:6px;border-top:1px solid #ffffff22;padding-top:6px';
+    item.textContent = title + '\n' + prettyTrace(detail).split('\n').slice(0, 7).join('\n');
+    box.appendChild(item);
+  }
+  function installDiagnostics() {
+    window.addEventListener('error', e => {
+      if (!e.error && !e.message) return;
+      reportGameError(e.message || 'Error', (e.error && e.error.stack) || `${e.filename}:${e.lineno}:${e.colno}`);
+    });
+    window.addEventListener('unhandledrejection', e => {
+      const r = e.reason; reportGameError('Unhandled promise rejection: ' + ((r && r.message) || r), (r && r.stack) || '');
+    });
   }
 
   async function mountAndRun() {
@@ -741,6 +862,7 @@ summary::-webkit-details-marker{display:none}
       for (const a of [...from.attributes]) { if (/^on/i.test(a.name)) continue; try { to.setAttribute(a.name, a.value); } catch (_) {} }
     };
     copyAttrs(doc.documentElement, document.documentElement);   // the game's <html> / <body> classes & styles
+    mountStarted = true;
     const headNodes = [...doc.head.childNodes].map(n => document.importNode(n, true));
     document.head.replaceChildren(...headNodes, loaderStyle);
     document.documentElement.lang = doc.documentElement.lang || 'en';
@@ -749,18 +871,30 @@ summary::-webkit-details-marker{display:none}
     copyAttrs(doc.body, document.body);
     document.body.replaceChildren(...appNodes, loader, notice);
     installLifecycleShim();
+    installDiagnostics();
 
     let libs = 0;
     for (const plan of scriptPlan) {
       if (plan.src) {
+        if (plan.local) {                       // the game's own file, run from the downloaded copy
+          setPhase('Starting the game…', `Running ${plan.path}.`);
+          if (rowMap.has(plan.path)) setFileState(plan.path, 'active', '');
+          await loadExternalScript(plan);
+          if (rowMap.has(plan.path)) setFileState(plan.path, 'done', '');
+          continue;
+        }
         // analytics / tracking beacons are never needed to play, and ad-blockers often block them
         if (OPTIONAL_SCRIPTS.test(plan.src)) { console.info('[launcher] skipped optional script', plan.src); continue; }
         setPhase('Warming up…', `Loading helper library ${++libs}.`);
         try { await loadExternalScript(plan); }
         catch (firstErr) {
+          if (!firstErr.loadFailure) throw firstErr;     // it ran and threw — never run a script twice
           console.warn('[launcher] retrying', plan.src, firstErr);
           try { await loadExternalScript(plan); }
-          catch (secondErr) { throw new Error(`A library the game needs could not be loaded (an ad-blocker or network filter may be blocking it):\n${plan.src}`); }
+          catch (secondErr) {
+            if (!secondErr.loadFailure) throw secondErr;
+            throw new Error(`A library the game needs could not be loaded (an ad-blocker or network filter may be blocking it):\n${plan.src}`);
+          }
         }
       } else {
         if (!plan.code.trim()) continue;
@@ -772,11 +906,15 @@ summary::-webkit-details-marker{display:none}
       }
     }
 
+    setPhase('Starting the game…', 'Loading the game’s scripts and plugins.');
+    await waitForQuiet(15000);
     setPhase('Starting the game…', 'Waking everything up.');
     await flushLifecycle(bodyOnload);
     setGlass(100); $('fileStep').textContent = `${fileCache.size}/${fileCache.size}`;
     setPhase('Cheers 🍸', 'Your table is ready.'); setVibe('Enjoy the night.');
-    await new Promise(r => setTimeout(r, 1400));   // let the game paint its first frames underneath
+    setVibe('Almost there…');
+    await waitForGame(6000);                        // wait for the game's own canvas (if it has one)
+    await new Promise(r => setTimeout(r, 1200));    // let the game paint its first frames underneath
     stopSound(false);                               // rain and loader dissolve together (~3s)
     loader.classList.add('hidden');
     await new Promise(r => setTimeout(r, 3200));
@@ -803,7 +941,7 @@ summary::-webkit-details-marker{display:none}
       setPhase('Everything’s here', `Fetched ${fileCache.size} files. Setting the scene…`);
       await mountAndRun();
     } catch (error) {
-      showError(`${error?.message || String(error)}\n\nNothing was embedded in a frame. Check your connection and that the repository is public, then hit Retry. “Force load” skips the GitHub API if you’re rate limited.`);
+      showError(`${error?.message || String(error)}\n\nNothing was embedded in a frame. Check your connection and that the repository is public, then hit Retry. “Force load” skips the GitHub API if you’re rate limited.${mountStarted ? '\n\nThe game had already begun starting up in this page, so Retry will reload the page for a clean run.' : ''}`);
       for (const path of queue) { const row = rowMap.get(path); if (row && row.dataset.loaded !== 'true' && !row.classList.contains('failed')) setFileState(path, 'failed', 'not loaded'); }
     } finally {
       busy = false;
@@ -840,8 +978,16 @@ summary::-webkit-details-marker{display:none}
     } catch (_) {} finally { checkingForUpdates = false; }
   }
 
-  $('retry').addEventListener('click', () => launch());
-  $('force').addEventListener('click', () => { if (busy) return; forceMode = true; updateChecksDisabled = true; launch(); });
+  // Once the game's scripts have run in this page they can't be run again (their top-level consts would collide),
+  // so Retry / Force after that point needs a fresh page.
+  function relaunch(force) {
+    if (!mountStarted) { if (busy) return; if (force) { forceMode = true; updateChecksDisabled = true; } launch(); return; }
+    if (/^(?:https?|file):/i.test(location.protocol)) {
+      if (force) { const u = new URL(location.href); u.searchParams.set('force', '1'); location.href = u.href; } else location.reload();
+    } else note('The game already started once in this tab — close it and launch again.', 6000);
+  }
+  $('retry').addEventListener('click', () => relaunch(false));
+  $('force').addEventListener('click', () => relaunch(true));
   launch().catch(err => console.error('[launcher]', err));
   setInterval(checkForUpdates, 300000);
 })();
