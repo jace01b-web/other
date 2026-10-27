@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070a1f">
+<title>A Night Filled With the Sound of Rain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style id="launcherBase">
+:root{color-scheme:dark}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070a1f}
+</style>
+<style id="launcherStyles">
+:root{--bg:#070a1f;--ink:#dfe8ff;--muted:#8f9bd0;--cyan:#6fe3ff;--blue:#3b8bff;--violet:#b56bff;--pink:#ff6bd6;--moon:#eaf2ff;--bad:#ff9fb4}
+#loading,#loading *{box-sizing:border-box}
+#loading{font:15px/1.55 "Fredoka",system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;overflow:auto;padding:clamp(14px,3vw,34px);
+  background:
+    radial-gradient(ellipse at 78% 18%,#2a3fa655 0,transparent 42%),
+    radial-gradient(ellipse at 15% 85%,#5a2a9a33 0,transparent 45%),
+    linear-gradient(180deg,#060820 0%,#0b1038 55%,#150f3a 100%);
+  opacity:1;visibility:visible;transition:opacity 3s cubic-bezier(.45,0,.2,1),visibility 0s}
+#loading.hidden{opacity:0;visibility:hidden;pointer-events:none;transition:opacity 3s cubic-bezier(.45,0,.2,1),visibility 0s linear 3s}
+.stage{transition:transform 3s cubic-bezier(.3,0,.2,1),filter 2.4s ease,opacity 2s ease}
+#loading.hidden .stage{transform:translateY(-10px) scale(1.04);filter:blur(7px);opacity:0}
+.moon{transition:opacity 2.4s ease}#loading.hidden .moon{opacity:0}
+#rain{transition:opacity 2.6s ease}#loading.hidden #rain{opacity:0}
+#rain{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#loading:after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,#02030d99 100%)}
+
+/* moon */
+.moon{position:fixed;z-index:0;top:7vh;right:9vw;width:clamp(90px,15vw,190px);aspect-ratio:1;border-radius:50%;
+  background:
+    radial-gradient(circle at 34% 30%,#fff 0,#eaf2ff 38%,#bcd0f7 100%);
+  box-shadow:0 0 40px 10px #8fb2ff55,0 0 140px 50px #5d7dff33;
+  animation:moonFloat 9s ease-in-out infinite alternate;pointer-events:none}
+.moon:before,.moon:after{content:"";position:absolute;border-radius:50%;background:#9db5e644}
+.moon:before{width:22%;height:22%;left:56%;top:22%;box-shadow:-60% 90% 0 -2px #9db5e633}
+.moon:after{width:14%;height:14%;left:24%;top:58%;box-shadow:120% -40% 0 2px #9db5e62e}
+@keyframes moonFloat{from{transform:translateY(-6px)}to{transform:translateY(8px)}}
+
+/* main stack */
+.stage{position:relative;z-index:2;width:min(720px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.crescent{width:54px;height:54px;filter:drop-shadow(0 0 10px #ffd84ecc) drop-shadow(0 0 26px #ffcf3a88);animation:bob 5s ease-in-out infinite alternate}
+@keyframes bob{from{transform:translateY(-3px) rotate(-4deg)}to{transform:translateY(4px) rotate(4deg)}}
+h1{margin:2px 0 0;font-weight:700;font-size:clamp(30px,6.4vw,62px);line-height:1.06;letter-spacing:.01em;color:#c9f4ff;
+  text-shadow:0 0 6px #bff1ff,0 0 18px var(--cyan),0 0 40px var(--blue),0 0 80px #2f6bff;
+  animation:neon 7s infinite}
+h1 small{display:block;font-size:.74em;font-weight:600}
+@keyframes neon{0%,18%,22%,62%,64%,100%{opacity:1}20%{opacity:.78}63%{opacity:.86}}
+.sub{margin:4px 0 10px;color:var(--muted);font-size:clamp(12px,1.6vw,14px);letter-spacing:.22em;text-transform:uppercase}
+
+/* glass */
+.glass-wrap{position:relative;width:170px;height:190px;margin:4px 0 0}
+.glass-wrap svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 14px #4aa8ff66)}
+.liquid{transition:transform .6s cubic-bezier(.3,.8,.3,1)}
+.wave{animation:slosh 3.2s ease-in-out infinite alternate;transform-origin:center}
+@keyframes slosh{from{transform:translateX(-14px)}to{transform:translateX(14px)}}
+.sparkle{animation:twinkle 2.4s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.pct{font-size:clamp(22px,4vw,30px);font-weight:600;color:#e4d8ff;letter-spacing:.04em;text-shadow:0 0 12px var(--violet),0 0 30px #8a46ffaa;font-variant-numeric:tabular-nums;margin-top:2px}
+.vibe{min-height:26px;margin:2px 0 0;font-size:clamp(15px,2.2vw,18px);color:#cfd8ff;transition:opacity .8s ease}
+.vibe.fade{opacity:0}
+
+.tech{margin-top:10px;max-width:560px;font-size:12px;color:#7d89bd;overflow-wrap:anywhere;min-height:36px}
+.tech b{color:#a9b6ec;font-weight:500}
+
+/* controls */
+.row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px}
+.btn{appearance:none;cursor:pointer;font:500 14px/1 "Fredoka",system-ui,sans-serif;padding:11px 18px;border-radius:999px;text-decoration:none;color:#f0e6ff;
+  border:1px solid #b56bff88;background:linear-gradient(180deg,#2b1a5acc,#1a1140cc);box-shadow:0 0 14px #b56bff33,inset 0 1px #ffffff1a;
+  text-shadow:0 0 8px var(--violet);transition:transform .15s,box-shadow .2s,border-color .2s}
+.btn:hover{transform:translateY(-1px);border-color:var(--pink);box-shadow:0 0 22px #ff6bd655,inset 0 1px #ffffff22}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btn.on{border-color:var(--cyan);color:#d7f7ff;text-shadow:0 0 8px var(--cyan);box-shadow:0 0 20px #6fe3ff44}
+.btn.ghost{background:#0c0f2a99;border-color:#4b5aa877;text-shadow:none;color:#b8c3f3}
+
+.error{margin-top:14px;max-width:600px;padding:14px 16px;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;max-height:200px;overflow:auto;
+  border:1px solid #ff9fb455;border-radius:16px;background:#2a0f2acc;color:#ffd2dc;font-size:12px;line-height:1.55}
+.error[hidden]{display:none}
+
+details{margin-top:14px;width:min(520px,100%);text-align:left;color:#8f9bd0;font-size:12px}
+summary{cursor:pointer;text-align:center;list-style:none;letter-spacing:.14em;text-transform:uppercase;font-size:10px;color:#6f7bb0}
+summary::-webkit-details-marker{display:none}
+.asset-list{margin-top:8px;display:grid;gap:4px;max-height:150px;overflow:auto;padding:8px;border-radius:14px;background:#080b24cc;border:1px solid #2a3470;scrollbar-width:thin;scrollbar-color:#3a4590 transparent}
+.asset-row{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:8px;align-items:center;padding:3px 6px;color:#6f7bb0;border-radius:8px}
+.asset-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.asset-row.active{color:#c9f4ff;background:#16205a88}
+.asset-row.done{color:#8fb7ff}
+.asset-row.failed{color:var(--bad)}
+.foot{margin-top:16px;font-size:11px;color:#59638f}
+.foot a{color:#8896d6}
+
+#launcherNotice{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);z-index:2147483600;opacity:0;pointer-events:none;
+  padding:9px 16px;border-radius:999px;background:#12163fee;border:1px solid #4b5aa8;color:#dfe8ff;font-size:13px;transition:.3s}
+#launcherNotice.show{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div id="loading">
+  <canvas id="rain"></canvas>
+  <div class="moon" aria-hidden="true"></div>
+
+  <main class="stage">
+    <svg class="crescent" viewBox="0 0 64 64" aria-hidden="true"><path d="M44 8a26 26 0 1 0 12 44A22 22 0 0 1 44 8z" fill="#ffd84e"/></svg>
+    <h1 id="loaderTitle">A Night Filled With<small>the Sound of Rain</small></h1>
+    <div class="sub">pouring your game…</div>
+
+    <div class="glass-wrap" role="progressbar" aria-label="Loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="glassBar">
+      <svg viewBox="0 0 160 190">
+        <defs>
+          <clipPath id="bowl"><path d="M14 22 H146 L80 104 Z"/></clipPath>
+          <linearGradient id="liq" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#8e5bff"/><stop offset=".45" stop-color="#3b8bff"/><stop offset="1" stop-color="#18c6ff"/>
+          </linearGradient>
+        </defs>
+        <g clip-path="url(#bowl)">
+          <rect x="0" y="0" width="160" height="110" fill="#0a1240" opacity=".55"/>
+          <g class="liquid" id="liquid" style="transform:translateY(84px)">
+            <g class="wave"><path d="M-40 22 q15 -7 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 V140 H-40 Z" fill="url(#liq)"/></g>
+          </g>
+          <circle class="sparkle" cx="62" cy="52" r="1.6" fill="#fff"/>
+          <circle class="sparkle" cx="98" cy="40" r="1.3" fill="#fff" style="animation-delay:.8s"/>
+          <circle class="sparkle" cx="84" cy="70" r="1.5" fill="#fff" style="animation-delay:1.5s"/>
+        </g>
+        <path d="M14 22 H146 L80 104 Z" fill="none" stroke="#cfe2ff" stroke-width="3" stroke-linejoin="round" opacity=".9"/>
+        <path d="M80 104 V160" stroke="#cfe2ff" stroke-width="3" stroke-linecap="round" opacity=".9"/>
+        <ellipse cx="80" cy="168" rx="34" ry="7" fill="none" stroke="#cfe2ff" stroke-width="3" opacity=".9"/>
+        <path d="M30 30 L52 30" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+      </svg>
+    </div>
+    <div class="pct" id="filePercent">0%</div>
+    <p class="vibe" id="vibe">Listening to the rain…</p>
+
+    <div class="tech" role="status" aria-live="polite">
+      <div><b id="statusTitle">Connecting…</b></div>
+      <div id="statusText">Finding the latest version of the game.</div>
+    </div>
+
+    <div class="error" id="error" hidden></div>
+
+    <div class="row">
+      <button class="btn" id="sound" type="button">🌧 Rain sound: off</button>
+      <button class="btn ghost" id="retry" type="button">↻ Retry</button>
+      <button class="btn ghost" id="force" type="button" title="Skips the GitHub API and loads through the jsDelivr CDN">⚡ Force load</button>
+      <a class="btn ghost" href="https://github.com/suki-web-ports/A-Night-Filled-With-the-Sound-of-Rain-v1.01/tree/main" target="_blank" rel="noopener noreferrer">Source ↗</a>
+    </div>
+
+    <details>
+      <summary>show files <span id="assetCount"></span></summary>
+      <div class="asset-list" id="assetList"></div>
+    </details>
+    <div class="foot">current: <span id="currentFile">—</span> · <span id="fileStep">0/0</span></div>
+  </main>
+</div>
+<div id="launcherNotice" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ───────── config ───────── */
+  const OWNER = 'suki-web-ports';
+  const REPO = 'A-Night-Filled-With-the-Sound-of-Rain-v1.01';
+  const BRANCH = 'main';
+  const API_ROOT = `https://api.github.com/repos/${OWNER}/${REPO}`;
+  const RAW_ROOT = `https://raw.githubusercontent.com/${OWNER}/${REPO}/`;
+  const $ = id => document.getElementById(id);
+
+  /* ───────── ambience: rain, stars, ripples ───────── */
+  const cv = $('rain'), ctx = cv.getContext('2d');
+  let W = 0, H = 0, dpr = 1, floorY = 0, drops = [], stars = [], ripples = [], bokeh = [];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function sizeCanvas() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    floorY = H * 0.86;
+    drops = Array.from({length: Math.round(Math.min(220, W / 7))}, () => newDrop(true));
+    stars = Array.from({length: 70}, () => ({x: rnd(0, W), y: rnd(0, H * 0.55), r: rnd(.4, 1.4), p: rnd(0, 6.28), s: rnd(.4, 1.4)}));
+    bokeh = Array.from({length: 9}, (_, i) => ({x: rnd(0, W), y: rnd(H * .62, H * .84), r: rnd(18, 46), hue: [195, 265, 305, 220][i % 4], p: rnd(0, 6.28)}));
+  }
+  function newDrop(initial) {
+    const depth = rnd(.4, 1);
+    return {x: rnd(-40, W + 40), y: initial ? rnd(-H, H) : rnd(-80, -10), len: 12 + depth * 22, v: 520 + depth * 620, a: .12 + depth * .35, fy: H * rnd(.78, .97), d: depth};
+  }
+  let last = performance.now();
+  function frame(now) {
+    if (!cv.isConnected) return;               // launcher gone — stop animating
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    ctx.clearRect(0, 0, W, H);
+    for (const s of stars) {
+      s.p += dt * s.s;
+      ctx.globalAlpha = .25 + .55 * Math.abs(Math.sin(s.p));
+      ctx.fillStyle = '#dbe6ff';
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill();
+    }
+    for (const b of bokeh) {                  // soft out-of-focus neon lights
+      b.p += dt * .4;
+      const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+      const a = .10 + .05 * Math.sin(b.p);
+      g.addColorStop(0, `hsla(${b.hue},95%,65%,${a})`); g.addColorStop(1, `hsla(${b.hue},95%,65%,0)`);
+      ctx.globalAlpha = 1; ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 6.283); ctx.fill();
+    }
+    ctx.lineWidth = 1.1; ctx.lineCap = 'round';
+    for (const d of drops) {
+      d.y += d.v * dt; d.x -= d.v * dt * .12;
+      ctx.globalAlpha = d.a;
+      ctx.strokeStyle = '#a9c8ff';
+      ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x + d.len * .12, d.y - d.len); ctx.stroke();
+      if (d.y >= d.fy) {
+        if (ripples.length < 90) ripples.push({x: d.x, y: d.fy, r: 1, max: 8 + d.d * 20, a: .45 * d.d});
+        Object.assign(d, newDrop(false));
+      }
+    }
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i];
+      r.r += dt * 26; r.a -= dt * .5;
+      if (r.a <= 0 || r.r > r.max) { ripples.splice(i, 1); continue; }
+      ctx.globalAlpha = r.a; ctx.strokeStyle = '#8fb5ff'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.ellipse(r.x, r.y, r.r, r.r * .32, 0, 0, 6.283); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(frame);
+  }
+  sizeCanvas(); addEventListener('resize', sizeCanvas);
+  requestAnimationFrame(frame);
+
+  /* ───────── ambience: generated rain sound (no files needed) ───────── */
+  let ac = null, master = null, soundNodes = [], dripTimer = 0, thunderTimer = 0, soundOn = false, userMuted = false, gestureBound = false;
+  function setSoundUI(state) {
+    const b = $('sound'); if (!b) return;
+    b.classList.toggle('on', state === 'on');
+    b.textContent = state === 'on' ? '🌧 Rain sound: on' : state === 'wait' ? '🌧 Tap anywhere for rain' : '🌧 Rain sound: off';
+  }
+  function noiseBuffer(kind) {
+    const len = ac.sampleRate * 4, buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      if (kind === 'brown') { last = (last + .04 * w) / 1.04; d[i] = last * 3.4; } else d[i] = w;
+    }
+    return buf;
+  }
+  function addLayer(kind, filters, gainValue, lfoDepth, lfoHz) {
+    const src = ac.createBufferSource(); src.buffer = noiseBuffer(kind); src.loop = true;
+    let node = src;
+    for (const [type, freq] of filters) { const f = ac.createBiquadFilter(); f.type = type; f.frequency.value = freq; node.connect(f); node = f; }
+    const g = ac.createGain(); g.gain.value = gainValue; node.connect(g); g.connect(master);
+    if (lfoDepth) { const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = lfoHz; lg.gain.value = lfoDepth; lfo.connect(lg); lg.connect(g.gain); lfo.start(); soundNodes.push(lfo); }
+    src.start(); soundNodes.push(src);
+  }
+  function startSound() {
+    try {
+      if (!ac) {
+        ac = new (window.AudioContext || window.webkitAudioContext)();
+        master = ac.createGain(); master.gain.value = 0; master.connect(ac.destination);
+        addLayer('brown', [['lowpass', 650]], .5, .06, .08);            // deep body of the rain
+        addLayer('white', [['highpass', 1400], ['lowpass', 3600]], .05, .015, .12); // light patter on the window
+      }
+      if (ac.state === 'suspended') ac.resume().catch(() => {});
+      master.gain.cancelScheduledValues(ac.currentTime);
+      master.gain.setValueAtTime(master.gain.value, ac.currentTime);
+      master.gain.linearRampToValueAtTime(.42, ac.currentTime + 5);       // gentle fade-in
+      clearInterval(dripTimer); dripTimer = setInterval(drip, 1400);
+      clearTimeout(thunderTimer); scheduleThunder();
+      soundOn = true;
+      setSoundUI(ac.state === 'running' ? 'on' : 'wait');
+      if (ac.state !== 'running') bindGesture();
+    } catch (_) { soundOn = false; setSoundUI('off'); }
+  }
+  function bindGesture() {
+    if (gestureBound) return; gestureBound = true;
+    const go = () => {
+      for (const ev of ['pointerdown', 'keydown', 'touchstart']) removeEventListener(ev, go, true);
+      gestureBound = false;
+      if (ac && soundOn && !userMuted) { ac.resume().then(() => setSoundUI('on')).catch(() => {}); }
+    };
+    for (const ev of ['pointerdown', 'keydown', 'touchstart']) addEventListener(ev, go, true);
+  }
+  function drip() {
+    if (!ac || !soundOn || ac.state !== 'running' || Math.random() < .55) return;
+    const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
+    o.type = 'sine'; o.frequency.setValueAtTime(rnd(900, 1700), t); o.frequency.exponentialRampToValueAtTime(rnd(450, 750), t + .14);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.018, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + .12);
+    o.connect(g).connect(master); o.start(t); o.stop(t + .14);
+  }
+  function scheduleThunder() {
+    thunderTimer = setTimeout(() => {
+      if (!ac || !soundOn) return;
+      if (ac.state === 'running') {   // far-off, soft rumble
+        const t = ac.currentTime, src = ac.createBufferSource(), lp = ac.createBiquadFilter(), g = ac.createGain();
+        src.buffer = noiseBuffer('brown'); lp.type = 'lowpass'; lp.frequency.value = 110;
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.3, t + 2.4); g.gain.exponentialRampToValueAtTime(.0001, t + 8);
+        src.connect(lp).connect(g).connect(master); src.start(t); src.stop(t + 7);
+      }
+      scheduleThunder();
+    }, rnd(45000, 90000));
+  }
+  function stopSound(fast) {
+    soundOn = false; clearInterval(dripTimer); clearTimeout(thunderTimer);
+    if (!ac || !master) { setSoundUI('off'); return; }
+    const ctxRef = ac, nodes = soundNodes, fade = fast ? .35 : 3, t = ctxRef.currentTime;
+    master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t);
+    master.gain.linearRampToValueAtTime(0, t + fade);
+    ac = null; master = null; soundNodes = [];
+    setTimeout(() => { for (const n of nodes) { try { n.stop(); } catch (_) {} } try { ctxRef.close(); } catch (_) {} }, (fade + .2) * 1000);
+    setSoundUI('off');
+  }
+  $('sound').addEventListener('click', () => {
+    if (soundOn) { userMuted = true; stopSound(true); }
+    else { userMuted = false; startSound(); }
+  });
+  // Rain starts on its own; if the browser blocks autoplay it begins on your first click/tap/key press.
+  startSound();
+
+  /* ───────── cozy status lines ───────── */
+  const VIBES = [
+    'Listening to the rain…', 'Pouring something cool…', 'Neon humming softly…', 'Wiping down the bar…',
+    'Watching the moon through the window…', 'Stirring in a little starlight…', 'Letting the rain do its thing…',
+    'Almost time to sit down…', 'Dimming the lights just right…'
+  ];
+  let vibeIdx = 0;
+  const vibeTimer = setInterval(() => {
+    const el = $('vibe');
+    if (!el || !el.isConnected) return clearInterval(vibeTimer);
+    el.classList.add('fade');
+    setTimeout(() => { vibeIdx = (vibeIdx + 1) % VIBES.length; el.textContent = VIBES[vibeIdx]; el.classList.remove('fade'); }, 800);
+  }, 4200);
+  function setVibe(text) { vibeIdx = -1; const v = $('vibe'); if (v) v.textContent = text; }
+
+  /* ───────── loader engine ───────── */
+  const fileCache = new Map(), rowMap = new Map(), blobUrls = new Map();
+  let repoVersion = BRANCH, loadedCommitSha = '', queue = [], busy = false, checkingForUpdates = false;
+  let updateAvailableSha = '', currentExecuting = '', lastInjectedError = null, noticeTimer = 0;
+  // The game's scripts are injected AFTER the page already finished loading, so anything waiting for
+  // DOMContentLoaded / load (or window.onload / <body onload>) would never run. Capture those and fire them ourselves.
+  const deferredEvents = []; let lifecycleFlushed = false, onloadFn = null;
+  function installLifecycleShim() {
+    const wrap = (target, orig) => function (type, fn, opts) {
+      if (fn && (type === 'DOMContentLoaded' || (type === 'load' && target === window))) {
+        if (!lifecycleFlushed) deferredEvents.push({target, type, fn}); else setTimeout(() => runHandler(target, type, fn), 0);
+        return;
+      }
+      return orig.call(this, type, fn, opts);
+    };
+    window.addEventListener = wrap(window, window.addEventListener);
+    document.addEventListener = wrap(document, document.addEventListener);
+    Object.defineProperty(window, 'onload', {configurable: true, get: () => onloadFn,
+      set: v => { onloadFn = v; if (lifecycleFlushed && typeof v === 'function') setTimeout(() => runHandler(window, 'load', v), 0); }});
+  }
+  function runHandler(target, type, fn) {
+    try {
+      const ev = new Event(type);
+      if (typeof fn === 'function') fn.call(target, ev); else if (fn && typeof fn.handleEvent === 'function') fn.handleEvent(ev);
+    } catch (e) { console.error(`[launcher] ${type} handler failed:`, e); note(`The game threw an error in a ${type} handler (see console)`, 6000); }
+  }
+  async function flushLifecycle(bodyOnload) {
+    lifecycleFlushed = true;
+    const list = deferredEvents.splice(0);
+    for (const d of list) if (d.type === 'DOMContentLoaded') runHandler(d.target, d.type, d.fn);
+    await new Promise(r => setTimeout(r, 30));
+    for (const d of list) if (d.type === 'load') runHandler(d.target, d.type, d.fn);
+    if (bodyOnload) { try { new Function('event', bodyOnload).call(window, new Event('load')); } catch (e) { console.error('[launcher] body onload failed:', e); } }
+    if (typeof onloadFn === 'function') runHandler(window, 'load', onloadFn);
+    await new Promise(r => setTimeout(r, 30));
+  }
+  const OPTIONAL_SCRIPTS = /(cloudflareinsights\.com|google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|plausible\.io|clarity\.ms|hotjar\.com|mixpanel\.com|segment\.(?:com|io)|umami|statcounter\.com|fullstory\.com|beacon\.min\.js)/i;
+  let ENTRY = 'index.html';
+  let forceMode = /[?&]force(?:=1|=true|&|$)/i.test(location.search);
+  let updateChecksDisabled = false;
+
+  window.addEventListener('error', e => {
+    if (currentExecuting) lastInjectedError = new Error(`${currentExecuting}: ${e.message || 'JavaScript execution error'}`);
+  }, true);
+
+  const encodePath = p => String(p).split('/').map(encodeURIComponent).join('/');
+  function cleanPath(path) {
+    const parts = [];
+    for (const part of String(path || '').replace(/\\/g, '/').split('/')) {
+      if (!part || part === '.') continue;
+      if (part === '..') { parts.pop(); continue; }
+      parts.push(part);
+    }
+    return parts.join('/');
+  }
+  const dirOf = p => p.includes('/') ? p.slice(0, p.lastIndexOf('/') + 1) : '';
+  const cdnRoot = () => `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${repoVersion}/`;
+  const cdnUrl = p => cdnRoot() + encodePath(cleanPath(p));
+
+  async function fetchResponse(url, timeoutMs = 18000) {
+    const c = new AbortController(), t = setTimeout(() => c.abort(), timeoutMs);
+    try {
+      const r = await fetch(url, {cache: 'no-store', signal: c.signal, headers: {'Accept': 'application/vnd.github+json, text/plain, */*;q=0.8'}});
+      if (!r.ok) throw new Error(`HTTP ${r.status} — ${url}`);
+      return r;
+    } finally { clearTimeout(t); }
+  }
+  const fetchJson = async u => (await fetchResponse(u, 12000)).json();
+
+  const TREE_CACHE_KEY = `repoTree:${OWNER}/${REPO}`;
+  function saveTreeCache(paths) { try { localStorage.setItem(TREE_CACHE_KEY, JSON.stringify({time: Date.now(), paths})); } catch (_) {} }
+  function loadTreeCache() { try { const d = JSON.parse(localStorage.getItem(TREE_CACHE_KEY) || 'null'); if (d && Array.isArray(d.paths) && d.paths.length) return d.paths; } catch (_) {} return null; }
+
+  async function discoverTreeViaCdn() {
+    const r = await fetchResponse(`https://data.jsdelivr.com/v1/packages/gh/${OWNER}/${REPO}@${BRANCH}?structure=flat`, 15000);
+    const d = await r.json();
+    if (!d || !Array.isArray(d.files) || !d.files.length) throw new Error('jsDelivr returned no file list.');
+    return d.files.map(f => String(f.name || '').replace(/^\/+/, '')).filter(Boolean);
+  }
+  async function discoverTreeWithoutApi(reason) {
+    repoVersion = BRANCH; loadedCommitSha = ''; updateChecksDisabled = true;
+    try { const p = await discoverTreeViaCdn(); saveTreeCache(p); return p; }
+    catch (e) {
+      const cached = loadTreeCache(); if (cached) return cached;
+      throw new Error(`Could not list the game's files without the GitHub API. ${reason ? reason + ' ' : ''}jsDelivr: ${e?.message || e}`);
+    }
+  }
+  async function discoverTree() {
+    if (forceMode) return discoverTreeWithoutApi('');
+    let firstError = null;
+    try {
+      const commit = await fetchJson(`${API_ROOT}/commits/${BRANCH}`);
+      if (!commit.sha) throw new Error('No commit SHA returned.');
+      const tree = await fetchJson(`${API_ROOT}/git/trees/${commit.sha}?recursive=1`);
+      if (tree.truncated || !Array.isArray(tree.tree)) throw new Error('GitHub returned an incomplete file tree.');
+      repoVersion = commit.sha; loadedCommitSha = commit.sha;
+      const paths = tree.tree.filter(i => i.type === 'blob' && i.path).map(i => i.path);
+      saveTreeCache(paths); return paths;
+    } catch (e) { firstError = e; }
+    try {
+      const tree = await fetchJson(`${API_ROOT}/git/trees/${BRANCH}?recursive=1`);
+      if (tree.truncated || !Array.isArray(tree.tree)) throw new Error('Incomplete file tree.');
+      repoVersion = BRANCH;
+      const paths = tree.tree.filter(i => i.type === 'blob' && i.path).map(i => i.path);
+      saveTreeCache(paths); return paths;
+    } catch (e) {
+      note('GitHub API is busy — using the CDN file list instead.', 4000);
+      return discoverTreeWithoutApi(`Commit lookup: ${firstError?.message || firstError}. Branch lookup: ${e?.message || e}.`);
+    }
+  }
+
+  // The game's entry page: root index.html, otherwise the shallowest index.html in the repo.
+  function pickEntry(paths) {
+    if (paths.includes('index.html')) return 'index.html';
+    const idx = paths.filter(p => /(^|\/)index\.html?$/i.test(p)).sort((a, b) => a.split('/').length - b.split('/').length || a.localeCompare(b));
+    if (idx.length) return idx[0];
+    const html = paths.filter(p => /\.html?$/i.test(p)).sort((a, b) => a.split('/').length - b.split('/').length);
+    return html[0] || null;
+  }
+
+  function createQueue(paths) {
+    queue = paths.slice(); rowMap.clear(); $('assetList').replaceChildren();
+    for (const path of queue) {
+      const row = document.createElement('div'); row.className = 'asset-row'; row.dataset.path = path; row.dataset.loaded = 'false';
+      const icon = document.createElement('span'); icon.className = 'asset-icon'; icon.textContent = '·';
+      const name = document.createElement('span'); name.className = 'asset-name'; name.textContent = path; name.title = path;
+      const state = document.createElement('span'); state.className = 'asset-state'; state.textContent = '';
+      row.append(icon, name, state); $('assetList').appendChild(row); rowMap.set(path, row);
+    }
+    updateMeter();
+  }
+  function setFileState(path, state, detail) {
+    const row = rowMap.get(path); if (!row) return;
+    row.classList.remove('active', 'done', 'failed');
+    if (state !== 'queued') row.classList.add(state);
+    row.querySelector('.asset-icon').textContent = state === 'done' ? '✓' : state === 'failed' ? '!' : state === 'active' ? '◌' : '·';
+    row.querySelector('.asset-state').textContent = detail || '';
+    updateMeter();
+  }
+  function setGlass(percent) {
+    if (!$('liquid')) return;
+    // liquid group sits at translateY(84px) when empty, 0 when full
+    $('liquid').style.transform = `translateY(${(84 * (1 - percent / 100)).toFixed(1)}px)`;
+    $('glassBar').setAttribute('aria-valuenow', String(percent));
+    $('filePercent').textContent = `${percent}%`;
+  }
+  function updateMeter() {
+    const rows = queue.map(p => rowMap.get(p)).filter(Boolean);
+    if (!rows.length) { $('fileStep').textContent = '0/0'; setGlass(0); $('assetCount').textContent = ''; return; }
+    const loaded = rows.filter(r => r.dataset.loaded === 'true').length;
+    const failed = rows.filter(r => r.classList.contains('failed')).length;
+    const cur = rows.find(r => r.classList.contains('active')) || rows.find(r => r.dataset.loaded !== 'true') || rows[rows.length - 1];
+    $('currentFile').textContent = cur.dataset.path.length > 46 ? '…' + cur.dataset.path.slice(-45) : cur.dataset.path;
+    $('fileStep').textContent = `${loaded}/${rows.length}`;
+    $('assetCount').textContent = `(${loaded}/${rows.length}${failed ? ` · ${failed} failed` : ''})`;
+    // leave the last sliver for launching the page itself
+    setGlass(Math.min(96, Math.round(loaded / rows.length * 96)));
+    const active = $('assetList').querySelector('.asset-row.active');
+    if (active) active.scrollIntoView({block: 'nearest'});
+  }
+  function setPhase(title, message) { const a = $('statusTitle'), b = $('statusText'); if (a) a.textContent = title; if (b) b.textContent = message; }
+  function showError(message) {
+    $('error').hidden = false; $('error').textContent = message;
+    $('statusTitle').textContent = 'The rain got in the way';
+    setVibe('Take a breath — try again in a moment.');
+  }
+  function clearError() { const e = $('error'); if (e) { e.hidden = true; e.textContent = ''; } }
+  function note(message, duration = 3000) {
+    const n = $('launcherNotice'); if (!n) return;
+    n.textContent = message; n.classList.add('show');
+    clearTimeout(noticeTimer); noticeTimer = setTimeout(() => n.classList.remove('show'), duration);
+  }
+
+  function mimeForPath(path) {
+    const ext = path.toLowerCase().split('.').pop();
+    return ({html:'text/html;charset=utf-8',htm:'text/html;charset=utf-8',css:'text/css;charset=utf-8',js:'text/javascript;charset=utf-8',mjs:'text/javascript;charset=utf-8',
+      json:'application/json;charset=utf-8',txt:'text/plain;charset=utf-8',md:'text/markdown;charset=utf-8',svg:'image/svg+xml',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',
+      webp:'image/webp',gif:'image/gif',ico:'image/x-icon',mp3:'audio/mpeg',ogg:'audio/ogg',oga:'audio/ogg',m4a:'audio/mp4',wav:'audio/wav',mp4:'video/mp4',webm:'video/webm',
+      woff:'font/woff',woff2:'font/woff2',ttf:'font/ttf',otf:'font/otf',wasm:'application/wasm',xml:'application/xml;charset=utf-8',
+      yml:'text/yaml;charset=utf-8',yaml:'text/yaml;charset=utf-8',webmanifest:'application/manifest+json;charset=utf-8'})[ext] || 'application/octet-stream';
+  }
+  const isTextPath = p => /\.(?:html?|xhtml|css|js|mjs|cjs|json|md|txt|xml|ya?ml|svg|webmanifest|toml|ini|csv|tsv|map|glsl|vert|frag)$/i.test(p);
+
+  async function fetchRepoFile(path) {
+    const enc = encodePath(path);
+    const rawA = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${repoVersion}/${enc}`;
+    const rawB = `https://raw.githubusercontent.com/${OWNER}/${REPO}/refs/heads/${BRANCH}/${enc}`;
+    const cdnA = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${encodeURIComponent(repoVersion)}/${enc}`;
+    const cdnB = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/${enc}`;
+    const urls = forceMode ? [cdnA, cdnB, rawA, rawB] : [rawA, rawB, cdnA, cdnB];
+    const errors = [];
+    for (const url of urls) {
+      try {
+        const r = await fetchResponse(url, 30000);
+        const bytes = await r.arrayBuffer();
+        const text = isTextPath(path) ? new TextDecoder('utf-8', {fatal: false}).decode(bytes) : null;
+        return {bytes, text, sourceUrl: url, mime: mimeForPath(path), empty: !bytes.byteLength};
+      } catch (e) { errors.push(e?.message || String(e)); }
+    }
+    throw new Error(`Unable to fetch ${path}. ${errors.slice(0, 4).join(' | ')}`);
+  }
+
+  async function downloadEveryFile(paths) {
+    fileCache.clear();
+    let next = 0; const failures = [];
+    const worker = async () => {
+      while (true) {
+        const i = next++; if (i >= paths.length) return;
+        const path = paths[i];
+        setFileState(path, 'active', '…');
+        try {
+          const rec = await fetchRepoFile(path);
+          fileCache.set(path, rec);
+          rowMap.get(path).dataset.loaded = 'true';
+          setFileState(path, 'done', '');
+        } catch (e) { failures.push({path, error: e}); setFileState(path, 'failed', 'failed'); }
+      }
+    };
+    await Promise.all(Array.from({length: Math.min(6, paths.length)}, worker));
+    if (failures.length) {
+      throw new Error(`${failures.length} file(s) could not be downloaded, so the launcher stopped instead of starting with missing pieces.\n\n` +
+        failures.slice(0, 12).map(f => `• ${f.path}: ${f.error?.message || f.error}`).join('\n') + (failures.length > 12 ? `\n…and ${failures.length - 12} more` : ''));
+    }
+  }
+
+  function resolveLocalPath(reference, basePath = ENTRY) {
+    const ref = String(reference || '').trim();
+    if (!ref || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|data:|blob:|javascript:|mailto:|tel:)/i.test(ref)) return null;
+    try {
+      const url = new URL(ref, `https://repo-path.invalid/${encodePath(cleanPath(basePath))}`);
+      if (url.origin !== 'https://repo-path.invalid') return null;
+      let dec; try { dec = decodeURIComponent(url.pathname); } catch (_) { dec = url.pathname; }
+      return cleanPath(dec.replace(/^\/+/, '')) || ENTRY;
+    } catch (_) { return null; }
+  }
+  function clearBlobUrls() { for (const u of blobUrls.values()) URL.revokeObjectURL(u); blobUrls.clear(); }
+  function createBlobUrls() {
+    clearBlobUrls();
+    for (const [path, f] of fileCache) blobUrls.set(path, URL.createObjectURL(new Blob([f.bytes], {type: f.mime || mimeForPath(path)})));
+  }
+  const isExternalReference = v => /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|data:|blob:|var\()/i.test(String(v || '').trim());
+  function resolveAssetUrl(reference, fromPath) {
+    const ref = String(reference || '').trim();
+    if (!ref || isExternalReference(ref)) return ref;
+    const lp = resolveLocalPath(ref, fromPath);
+    return lp ? (blobUrls.get(lp) || cdnUrl(lp)) : ref;
+  }
+  function rewriteCss(css, cssPath) {
+    let out = String(css || '');
+    out = out.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/gi, (all, q, ref) => {
+      const v = String(ref).trim(); if (!v || isExternalReference(v)) return all;
+      return `url("${resolveAssetUrl(v, cssPath).replace(/"/g, '%22')}")`;
+    });
+    out = out.replace(/(@import\s+)(["'])([^"']+)\2/gi, (all, lead, q, ref) => isExternalReference(ref) ? all : `${lead}${q}${resolveAssetUrl(ref, cssPath)}${q}`);
+    return out.replace(/<\/style/gi, '<\\/style');
+  }
+  function rewriteDocumentReferences(doc, pagePath) {
+    for (const el of doc.querySelectorAll('[src],[href],[poster],[data]')) {
+      for (const attr of ['src', 'href', 'poster', 'data']) {
+        if (!el.hasAttribute(attr)) continue;
+        const v = el.getAttribute(attr).trim();
+        if (!v || isExternalReference(v)) continue;
+        const p = resolveLocalPath(v, pagePath);
+        if (p) el.setAttribute(attr, blobUrls.get(p) || cdnUrl(p));
+      }
+    }
+  }
+
+  // Games often load things by relative path at runtime (fetch / XHR / new Image()).
+  // Those would resolve against THIS launcher's address, so point them at the downloaded files instead.
+  function installRuntimeRedirects() {
+    const entryDir = dirOf(ENTRY);
+    let launcherDir = location.pathname.replace(/[^/]*$/, '');
+    try { launcherDir = decodeURIComponent(launcherDir); } catch (_) {}
+    const keys = [...blobUrls.keys()], suffixCache = new Map();
+    const suffixMatch = p => {
+      if (!p) return null;
+      if (suffixCache.has(p)) return suffixCache.get(p);
+      let hit = null;
+      for (const k of keys) { if (p === k || p.endsWith('/' + k) || (p.includes('/') && k.endsWith('/' + p))) { hit = k; break; } }
+      suffixCache.set(p, hit); return hit;
+    };
+    // Maps same-origin relative requests (which would hit the launcher's own address, e.g. file:///C:/Users/…)
+    // to the downloaded blob; if a file somehow isn't in the blob store, falls back to the pinned CDN copy.
+    const mapUrl = input => {
+      try {
+        const raw = typeof input === 'string' ? input : (input && input.url) || String(input);
+        if (!raw || /^(?:data:|blob:|about:|javascript:|mailto:)/i.test(raw)) return null;
+        const u = new URL(raw, location.href);
+        if (u.protocol !== location.protocol || u.host !== location.host) return null;
+        let p; try { p = decodeURIComponent(u.pathname); } catch (_) { p = u.pathname; }
+        if (p.startsWith(launcherDir)) p = p.slice(launcherDir.length);
+        p = cleanPath(p);
+        if (!p) return null;
+        const key = [cleanPath(entryDir + p), p].find(k => blobUrls.has(k)) || suffixMatch(p);
+        if (key) return blobUrls.get(key) + (u.hash || '');
+        return cdnUrl(cleanPath(entryDir + p)) + (u.search || '');
+      } catch (_) { return null; }
+    };
+    const origFetch = window.fetch.bind(window);
+    window.fetch = (input, init) => {
+      const m = mapUrl(input);
+      if (!m) return origFetch(input, init);
+      return origFetch(typeof input === 'string' || input instanceof URL ? m : new Request(m, input), init);
+    };
+    const origOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (method, url, ...rest) { const m = mapUrl(String(url)); return origOpen.call(this, method, m || url, ...rest); };
+    const patchSrc = (Ctor, prop) => {
+      const d = Object.getOwnPropertyDescriptor(Ctor.prototype, prop);
+      if (!d || !d.set) return;
+      Object.defineProperty(Ctor.prototype, prop, {configurable: true, enumerable: d.enumerable, get: d.get, set(v) { const m = typeof v === 'string' ? mapUrl(v) : null; d.set.call(this, m || v); }});
+    };
+    patchSrc(HTMLImageElement, 'src'); patchSrc(HTMLMediaElement, 'src'); patchSrc(HTMLSourceElement, 'src'); patchSrc(HTMLScriptElement, 'src'); patchSrc(HTMLLinkElement, 'href');
+    const origSetAttr = Element.prototype.setAttribute;
+    Element.prototype.setAttribute = function (name, value) {
+      if (typeof value === 'string' && /^(src|href|poster|data)$/i.test(name) && /^(IMG|AUDIO|VIDEO|SOURCE|SCRIPT|LINK|OBJECT|EMBED|TRACK)$/.test(this.tagName)) { const m = mapUrl(value); if (m) value = m; }
+      return origSetAttr.call(this, name, value);
+    };
+    const NativeAudio = window.Audio;
+    window.Audio = function (src) { const a = new NativeAudio(); if (src !== undefined) a.src = String(src); return a; };
+    window.Audio.prototype = NativeAudio.prototype;
+    const NativeWorker = window.Worker;
+    if (NativeWorker) window.Worker = class extends NativeWorker { constructor(url, opts) { super(typeof url === 'string' ? (mapUrl(url) || url) : url, opts); } };
+  }
+
+  function makeScriptPlan(doc, pagePath) {
+    return [...doc.querySelectorAll('script')].map(node => {
+      const attrs = [...node.attributes].reduce((o, a) => (o[a.name] = a.value, o), {});
+      const src = node.getAttribute('src');
+      if (!src) return {path: `${pagePath} (inline script)`, code: node.textContent || '', attrs};
+      const lp = resolveLocalPath(src, pagePath);
+      if (lp && fileCache.has(lp) && String(attrs.type || '').toLowerCase() === 'module') return {path: lp, src: cdnUrl(lp), attrs};
+      if (lp && fileCache.has(lp)) {
+        const rec = fileCache.get(lp);
+        if (rec.text === null) throw new Error(`Script ${lp} is not a text file.`);
+        return {path: lp, code: rec.text, attrs};
+      }
+      let ext = src;
+      if (lp) ext = cdnUrl(lp); else { try { ext = new URL(src, cdnRoot() + dirOf(pagePath)).href; } catch (_) {} }
+      return {path: ext, src: ext, attrs};
+    });
+  }
+  async function loadExternalScript(plan) {
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      for (const [n, v] of Object.entries(plan.attrs || {})) { if (['src','async','defer','integrity','crossorigin','referrerpolicy'].includes(n.toLowerCase())) continue; s.setAttribute(n, v); }
+      if (plan.attrs?.integrity) s.integrity = plan.attrs.integrity;
+      if (plan.attrs?.crossorigin) s.crossOrigin = plan.attrs.crossorigin;
+      s.async = false;
+      const t = setTimeout(() => { s.remove(); reject(new Error(`Timed out loading ${plan.src}`)); }, 25000);
+      s.onload = () => { clearTimeout(t); resolve(); };
+      s.onerror = () => { clearTimeout(t); reject(new Error(`Failed to load ${plan.src}`)); };
+      currentExecuting = plan.path; lastInjectedError = null;
+      s.src = plan.src; document.body.appendChild(s);
+    });
+    await new Promise(r => setTimeout(r, 0));
+    const err = lastInjectedError; currentExecuting = ''; lastInjectedError = null;
+    if (err) throw err;
+  }
+  async function runInlineScript(plan) {
+    const s = document.createElement('script');
+    for (const [n, v] of Object.entries(plan.attrs || {})) { if (['src','async','defer','integrity','crossorigin','referrerpolicy'].includes(n.toLowerCase())) continue; s.setAttribute(n, v); }
+    s.async = false; s.dataset.launcherSource = plan.path;
+    currentExecuting = plan.path; lastInjectedError = null;
+    s.textContent = `${plan.code}\n//# sourceURL=${RAW_ROOT}${encodeURIComponent(repoVersion)}/${encodePath(plan.path.split(' (inline script)')[0])}`.replace(/<\/script/gi, '<\\/script');
+    document.body.appendChild(s);
+    await new Promise(r => setTimeout(r, 0));
+    const err = lastInjectedError; currentExecuting = ''; lastInjectedError = null;
+    if (err) throw err;
+  }
+
+  async function mountAndRun() {
+    const entry = fileCache.get(ENTRY);
+    if (!entry || entry.text === null) throw new Error(`The entry page (${ENTRY}) is missing or unreadable.`);
+    setPhase('Setting the scene…', 'Mapping the game’s files and getting the page ready.');
+    setVibe('Dimming the lights…');
+    const doc = new DOMParser().parseFromString(entry.text, 'text/html');
+    if (!doc.documentElement || !doc.head || !doc.body) throw new Error(`${ENTRY} did not parse as a complete HTML document.`);
+
+    const base = doc.createElement('base'); base.href = cdnRoot() + dirOf(ENTRY);
+    const prior = doc.querySelector('base'); if (prior) prior.replaceWith(base); else doc.head.prepend(base);
+
+    const scriptPlan = makeScriptPlan(doc, ENTRY);
+    for (const link of [...doc.querySelectorAll('link[rel~="stylesheet"][href]')]) {
+      const lp = resolveLocalPath(link.getAttribute('href'), ENTRY);
+      if (lp && fileCache.has(lp)) {
+        const rec = fileCache.get(lp);
+        if (rec.text === null) throw new Error(`Stylesheet ${lp} is not a text file.`);
+        const st = doc.createElement('style');
+        // keep id / class / media / data-* so the game can still find and toggle its own stylesheet (e.g. getElementById('x').disabled)
+        for (const a of [...link.attributes]) { if (/^(rel|href|integrity|crossorigin|type|as|referrerpolicy|onload|onerror)$/i.test(a.name)) continue; try { st.setAttribute(a.name, a.value); } catch (_) {} }
+        st.dataset.repositoryFile = lp; st.textContent = rewriteCss(rec.text, lp); link.replaceWith(st);
+      } else if (lp) link.href = cdnUrl(lp);
+    }
+    // inline <style> blocks can also reference local files
+    for (const st of doc.querySelectorAll('style:not([data-repository-file])')) st.textContent = rewriteCss(st.textContent, ENTRY);
+    rewriteDocumentReferences(doc, ENTRY);
+    doc.querySelectorAll('script').forEach(n => n.remove());
+
+    installRuntimeRedirects();
+
+    const loader = $('loading'), notice = $('launcherNotice'), loaderStyle = $('launcherStyles');
+    const bodyOnload = doc.body.getAttribute('onload');
+    const copyAttrs = (from, to) => {
+      for (const a of [...to.attributes]) to.removeAttribute(a.name);
+      for (const a of [...from.attributes]) { if (/^on/i.test(a.name)) continue; try { to.setAttribute(a.name, a.value); } catch (_) {} }
+    };
+    copyAttrs(doc.documentElement, document.documentElement);   // the game's <html> / <body> classes & styles
+    const headNodes = [...doc.head.childNodes].map(n => document.importNode(n, true));
+    document.head.replaceChildren(...headNodes, loaderStyle);
+    document.documentElement.lang = doc.documentElement.lang || 'en';
+    document.title = doc.title || 'A Night Filled With the Sound of Rain';
+    const appNodes = [...doc.body.childNodes].map(n => document.importNode(n, true));
+    copyAttrs(doc.body, document.body);
+    document.body.replaceChildren(...appNodes, loader, notice);
+    installLifecycleShim();
+
+    let libs = 0;
+    for (const plan of scriptPlan) {
+      if (plan.src) {
+        // analytics / tracking beacons are never needed to play, and ad-blockers often block them
+        if (OPTIONAL_SCRIPTS.test(plan.src)) { console.info('[launcher] skipped optional script', plan.src); continue; }
+        setPhase('Warming up…', `Loading helper library ${++libs}.`);
+        try { await loadExternalScript(plan); }
+        catch (firstErr) {
+          console.warn('[launcher] retrying', plan.src, firstErr);
+          try { await loadExternalScript(plan); }
+          catch (secondErr) { throw new Error(`A library the game needs could not be loaded (an ad-blocker or network filter may be blocking it):\n${plan.src}`); }
+        }
+      } else {
+        if (!plan.code.trim()) continue;
+        const lp = plan.path.replace(/ \(inline script\)$/, '');
+        setPhase('Starting the game…', `Running ${lp}.`);
+        if (rowMap.has(lp)) setFileState(lp, 'active', '');
+        await runInlineScript(plan);
+        if (rowMap.has(lp)) setFileState(lp, 'done', '');
+      }
+    }
+
+    setPhase('Starting the game…', 'Waking everything up.');
+    await flushLifecycle(bodyOnload);
+    setGlass(100); $('fileStep').textContent = `${fileCache.size}/${fileCache.size}`;
+    setPhase('Cheers 🍸', 'Your table is ready.'); setVibe('Enjoy the night.');
+    await new Promise(r => setTimeout(r, 1400));   // let the game paint its first frames underneath
+    stopSound(false);                               // rain and loader dissolve together (~3s)
+    loader.classList.add('hidden');
+    await new Promise(r => setTimeout(r, 3200));
+    loader.remove(); notice.remove(); loaderStyle?.remove();
+  }
+
+  async function launch() {
+    if (busy) return; busy = true;
+    { const rb = $('retry'), fb = $('force'); if (rb) rb.disabled = true; if (fb) fb.disabled = true; }
+    clearError(); $('loading').classList.remove('hidden'); fileCache.clear();
+    try {
+      setPhase('Connecting…', 'Finding the latest version of the game.');
+      $('assetList').replaceChildren(); rowMap.clear(); queue = []; updateMeter();
+      const paths = await discoverTree();
+      if (!paths.length) throw new Error('The repository came back empty.');
+      const entry = pickEntry(paths);
+      if (!entry) throw new Error('No index.html (or any .html file) was found in the repository, so there is no page to launch.');
+      ENTRY = entry;
+      paths.sort((a, b) => a === ENTRY ? -1 : b === ENTRY ? 1 : a.localeCompare(b));
+      createQueue(paths);
+      setPhase(`Found ${paths.length} files`, `Version ${repoVersion === BRANCH ? BRANCH : repoVersion.slice(0, 7)} · entry page: ${ENTRY}`);
+      await downloadEveryFile(paths);
+      createBlobUrls();
+      setPhase('Everything’s here', `Fetched ${fileCache.size} files. Setting the scene…`);
+      await mountAndRun();
+    } catch (error) {
+      showError(`${error?.message || String(error)}\n\nNothing was embedded in a frame. Check your connection and that the repository is public, then hit Retry. “Force load” skips the GitHub API if you’re rate limited.`);
+      for (const path of queue) { const row = rowMap.get(path); if (row && row.dataset.loaded !== 'true' && !row.classList.contains('failed')) setFileState(path, 'failed', 'not loaded'); }
+    } finally {
+      busy = false;
+      const rb = $('retry'), fb = $('force');              // the loader is already gone after a successful launch
+      if (rb) rb.disabled = false; if (fb) fb.disabled = false;
+    }
+  }
+
+  function showUpdateAvailable(sha) {
+    updateAvailableSha = sha;
+    let b = document.getElementById('repoUpdateBanner');
+    if (!b) {
+      b = document.createElement('div'); b.id = 'repoUpdateBanner';
+      Object.assign(b.style, {position:'fixed',right:'14px',bottom:'14px',zIndex:'2147483647',display:'flex',alignItems:'center',gap:'10px',maxWidth:'min(460px,calc(100vw - 28px))',padding:'10px 14px',border:'1px solid #4b5aa8',borderRadius:'999px',background:'rgba(12,16,52,.96)',color:'#dfe8ff',boxShadow:'0 10px 30px #000a',font:'13px/1.4 system-ui,sans-serif'});
+      const m = document.createElement('span'); m.id = 'repoUpdateMessage';
+      const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = 'Update ↻';
+      Object.assign(btn.style, {border:'0',borderRadius:'999px',padding:'7px 12px',cursor:'pointer',font:'600 12px system-ui,sans-serif',color:'#0b1038',background:'linear-gradient(135deg,#8fe9ff,#b56bff)'});
+      btn.addEventListener('click', () => location.reload());
+      b.append(m, btn);
+    }
+    document.getElementById('repoUpdateMessage').textContent = `New version ${sha.slice(0, 7)} available — update whenever you like.`;
+    if (!b.isConnected) document.body.appendChild(b);
+  }
+  async function checkForUpdates() {
+    if (updateChecksDisabled || !loadedCommitSha || busy || checkingForUpdates || document.visibilityState !== 'visible') return;
+    checkingForUpdates = true;
+    try {
+      const r = await fetch(`${API_ROOT}/commits/${BRANCH}`, {cache: 'no-store', headers: {'Accept': 'application/vnd.github+json'}});
+      if (r.status === 403 || r.status === 429) { updateChecksDisabled = true; return; }
+      if (!r.ok) return;
+      const sha = (await r.json())?.sha;
+      // never reload on its own — that could wipe unsaved game progress
+      if (sha && sha !== loadedCommitSha && sha !== updateAvailableSha) showUpdateAvailable(sha);
+    } catch (_) {} finally { checkingForUpdates = false; }
+  }
+
+  $('retry').addEventListener('click', () => launch());
+  $('force').addEventListener('click', () => { if (busy) return; forceMode = true; updateChecksDisabled = true; launch(); });
+  launch().catch(err => console.error('[launcher]', err));
+  setInterval(checkForUpdates, 300000);
+})();
+</script>
+</body>
+</html>
