@@ -1,1 +1,1053 @@
 
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070a1f">
+<title>Granny Steam Webport</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style id="launcherBase">
+:root{color-scheme:dark}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070a1f}
+</style>
+<style id="launcherStyles">
+:root{--bg:#070a1f;--ink:#dfe8ff;--muted:#8f9bd0;--cyan:#6fe3ff;--blue:#3b8bff;--violet:#b56bff;--pink:#ff6bd6;--moon:#eaf2ff;--bad:#ff9fb4;--blood:#ff4d6d}
+#loading,#loading *{box-sizing:border-box}
+#loading{font:15px/1.55 "Fredoka",system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;overflow:auto;padding:clamp(14px,3vw,34px);
+  background:
+    radial-gradient(ellipse at 78% 18%,#2a3fa655 0,transparent 42%),
+    radial-gradient(ellipse at 15% 85%,#5a2a9a33 0,transparent 45%),
+    linear-gradient(180deg,#060820 0%,#0b1038 55%,#150f3a 100%);
+  opacity:1;visibility:visible;transition:opacity 3s cubic-bezier(.45,0,.2,1),visibility 0s}
+#loading.hidden{opacity:0;visibility:hidden;pointer-events:none;transition:opacity 3s cubic-bezier(.45,0,.2,1),visibility 0s linear 3s}
+.stage{transition:transform 3s cubic-bezier(.3,0,.2,1),filter 2.4s ease,opacity 2s ease}
+#loading.hidden .stage{transform:translateY(-10px) scale(1.04);filter:blur(7px);opacity:0}
+.moon{transition:opacity 2.4s ease}#loading.hidden .moon{opacity:0}
+#rain{transition:opacity 2.6s ease}#loading.hidden #rain{opacity:0}
+#rain{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#loading:after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,#02030d99 100%)}
+
+/* moon */
+.moon{position:fixed;z-index:0;top:7vh;right:9vw;width:clamp(90px,15vw,190px);aspect-ratio:1;border-radius:50%;
+  background:
+    radial-gradient(circle at 34% 30%,#fff 0,#eaf2ff 38%,#bcd0f7 100%);
+  box-shadow:0 0 40px 10px #8fb2ff55,0 0 140px 50px #5d7dff33;
+  animation:moonFloat 9s ease-in-out infinite alternate;pointer-events:none}
+.moon{filter:saturate(.8) brightness(.92)}
+.moon:before,.moon:after{content:"";position:absolute;border-radius:50%;background:#9db5e644}
+.moon:before{width:22%;height:22%;left:56%;top:22%;box-shadow:-60% 90% 0 -2px #9db5e633}
+.moon:after{width:14%;height:14%;left:24%;top:58%;box-shadow:120% -40% 0 2px #9db5e62e}
+@keyframes moonFloat{from{transform:translateY(-6px)}to{transform:translateY(8px)}}
+
+/* main stack */
+.stage{position:relative;z-index:2;width:min(720px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.crescent{width:54px;height:54px;filter:drop-shadow(0 0 10px #ffd84ecc) drop-shadow(0 0 26px #ffcf3a88);animation:bob 5s ease-in-out infinite alternate}
+@keyframes bob{from{transform:translateY(-3px) rotate(-4deg)}to{transform:translateY(4px) rotate(4deg)}}
+h1{margin:2px 0 0;font-weight:700;font-size:clamp(30px,6.4vw,62px);line-height:1.06;letter-spacing:.01em;color:#c9f4ff;
+  text-shadow:0 0 6px #bff1ff,0 0 18px var(--cyan),0 0 40px var(--blue),0 0 80px #2f6bff;
+  animation:neon 7s infinite}
+h1 small{display:block;font-size:.74em;font-weight:600}
+@keyframes neon{0%,18%,22%,62%,64%,100%{opacity:1}20%{opacity:.78}63%{opacity:.86}}
+.sub{margin:4px 0 10px;color:var(--muted);font-size:clamp(12px,1.6vw,14px);letter-spacing:.22em;text-transform:uppercase}
+
+/* glass */
+.glass-wrap{position:relative;width:170px;height:190px;margin:4px 0 0}
+.glass-wrap svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 14px #4aa8ff66)}
+.liquid{transition:transform .6s cubic-bezier(.3,.8,.3,1)}
+.wave{animation:slosh 3.2s ease-in-out infinite alternate;transform-origin:center}
+@keyframes slosh{from{transform:translateX(-14px)}to{transform:translateX(14px)}}
+.sparkle{animation:twinkle 2.4s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.pct{font-size:clamp(22px,4vw,30px);font-weight:600;color:#e4d8ff;letter-spacing:.04em;text-shadow:0 0 12px var(--violet),0 0 30px #8a46ffaa;font-variant-numeric:tabular-nums;margin-top:2px}
+.vibe{min-height:26px;margin:2px 0 0;font-size:clamp(15px,2.2vw,18px);color:#cfd8ff;transition:opacity .8s ease}
+.vibe.fade{opacity:0}
+
+.tech{margin-top:10px;max-width:560px;font-size:12px;color:#7d89bd;overflow-wrap:anywhere;min-height:36px}
+.tech b{color:#a9b6ec;font-weight:500}
+
+/* controls */
+.row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px}
+.btn{appearance:none;cursor:pointer;font:500 14px/1 "Fredoka",system-ui,sans-serif;padding:11px 18px;border-radius:999px;text-decoration:none;color:#f0e6ff;
+  border:1px solid #b56bff88;background:linear-gradient(180deg,#2b1a5acc,#1a1140cc);box-shadow:0 0 14px #b56bff33,inset 0 1px #ffffff1a;
+  text-shadow:0 0 8px var(--violet);transition:transform .15s,box-shadow .2s,border-color .2s}
+.btn:hover{transform:translateY(-1px);border-color:var(--pink);box-shadow:0 0 22px #ff6bd655,inset 0 1px #ffffff22}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btn.on{border-color:var(--cyan);color:#d7f7ff;text-shadow:0 0 8px var(--cyan);box-shadow:0 0 20px #6fe3ff44}
+.btn.ghost{background:#0c0f2a99;border-color:#4b5aa877;text-shadow:none;color:#b8c3f3}
+
+.error{margin-top:14px;max-width:600px;padding:14px 16px;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;max-height:200px;overflow:auto;
+  border:1px solid #ff9fb455;border-radius:16px;background:#2a0f2acc;color:#ffd2dc;font-size:12px;line-height:1.55}
+.error[hidden]{display:none}
+
+details{margin-top:14px;width:min(520px,100%);text-align:left;color:#8f9bd0;font-size:12px}
+summary{cursor:pointer;text-align:center;list-style:none;letter-spacing:.14em;text-transform:uppercase;font-size:10px;color:#6f7bb0}
+summary::-webkit-details-marker{display:none}
+.asset-list{margin-top:8px;display:grid;gap:4px;max-height:150px;overflow:auto;padding:8px;border-radius:14px;background:#080b24cc;border:1px solid #2a3470;scrollbar-width:thin;scrollbar-color:#3a4590 transparent}
+.asset-row{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:8px;align-items:center;padding:3px 6px;color:#6f7bb0;border-radius:8px}
+.asset-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.asset-row.active{color:#c9f4ff;background:#16205a88}
+.asset-row.done{color:#8fb7ff}
+.asset-row.failed{color:var(--bad)}
+.foot{margin-top:16px;font-size:11px;color:#59638f}
+.foot a{color:#8896d6}
+
+#launcherNotice{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);z-index:2147483600;opacity:0;pointer-events:none;
+  padding:9px 16px;border-radius:999px;background:#12163fee;border:1px solid #4b5aa8;color:#dfe8ff;font-size:13px;transition:.3s}
+#launcherNotice.show{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div id="loading">
+  <canvas id="rain"></canvas>
+  <div class="moon" aria-hidden="true"></div>
+
+  <main class="stage">
+    <svg class="crescent" viewBox="0 0 64 64" aria-hidden="true"><path d="M44 8a26 26 0 1 0 12 44A22 22 0 0 1 44 8z" fill="#ffd84e"/></svg>
+    <h1 id="loaderTitle">Granny<small>Steam Webport</small></h1>
+    <div class="sub">you have 5 days to escape</div>
+
+    <div class="glass-wrap" role="progressbar" aria-label="Loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar">
+      <svg viewBox="0 0 160 190">
+        <defs>
+          <clipPath id="bowl"><path d="M14 22 H146 L80 104 Z"/></clipPath>
+          <linearGradient id="liq" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#b56bff"/><stop offset=".5" stop-color="#6b4bff"/><stop offset="1" stop-color="#ff4d6d"/>
+          </linearGradient>
+        </defs>
+        <g clip-path="url(#bowl)">
+          <rect x="0" y="0" width="160" height="110" fill="#0a1240" opacity=".55"/>
+          <g class="liquid" id="liquid" style="transform:translateY(84px)">
+            <g class="wave"><path d="M-40 22 q15 -7 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 V140 H-40 Z" fill="url(#liq)"/></g>
+          </g>
+          <circle class="sparkle" cx="62" cy="52" r="1.6" fill="#fff"/>
+          <circle class="sparkle" cx="98" cy="40" r="1.3" fill="#fff" style="animation-delay:.8s"/>
+          <circle class="sparkle" cx="84" cy="70" r="1.5" fill="#fff" style="animation-delay:1.5s"/>
+        </g>
+        <path d="M14 22 H146 L80 104 Z" fill="none" stroke="#cfe2ff" stroke-width="3" stroke-linejoin="round" opacity=".9"/>
+        <path d="M80 104 V160" stroke="#cfe2ff" stroke-width="3" stroke-linecap="round" opacity=".9"/>
+        <ellipse cx="80" cy="168" rx="34" ry="7" fill="none" stroke="#cfe2ff" stroke-width="3" opacity=".9"/>
+        <path d="M30 30 L52 30" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+      </svg>
+    </div>
+    <div class="pct" id="filePercent">0%</div>
+    <p class="vibe" id="vibe">Don’t make a sound…</p>
+
+    <div class="tech" role="status" aria-live="polite">
+      <div><b id="statusTitle">Connecting…</b></div>
+      <div id="statusText">Finding the latest version of the game.</div>
+    </div>
+
+    <div class="error" id="error" hidden></div>
+
+    <div class="row">
+      <button class="btn ghost" id="retry" type="button">↻ Retry</button>
+      <button class="btn ghost" id="force" type="button" title="Skips the GitHub API and loads through the jsDelivr CDN">⚡ Force load</button>
+      <button class="btn ghost" id="copylog" type="button">⧉ Copy log</button>
+      <a class="btn ghost" href="https://github.com/suki-web-ports/Granny-Steam-Webport" target="_blank" rel="noopener noreferrer">Source ↗</a>
+    </div>
+
+    <details>
+      <summary>show files <span id="assetCount"></span></summary>
+      <div class="asset-list" id="assetList"></div>
+    </details>
+    <details id="diagBox">
+      <summary>diagnostics</summary>
+      <pre class="asset-list" id="diag" style="white-space:pre-wrap;max-height:190px;margin:8px 0 0;font:11px/1.45 ui-monospace,Consolas,monospace;color:#a9b6ec"></pre>
+    </details>
+    <div class="foot">current: <span id="currentFile">—</span> · <span id="fileStep">0/0</span></div>
+  </main>
+</div>
+<div id="launcherNotice" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ───────── config ───────── */
+  const OWNER = 'suki-web-ports';
+  const REPO = 'Granny-Steam-Webport';
+  let BRANCH = 'main';
+  const API_ROOT = `https://api.github.com/repos/${OWNER}/${REPO}`;
+  const RAW_ROOT = `https://raw.githubusercontent.com/${OWNER}/${REPO}/`;
+  const $ = id => document.getElementById(id);
+
+  /* ───────── ambience: rain, stars, ripples ───────── */
+  const cv = $('rain'), ctx = cv.getContext('2d');
+  let W = 0, H = 0, dpr = 1, floorY = 0, drops = [], stars = [], ripples = [], bokeh = [];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  function sizeCanvas() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    floorY = H * 0.86;
+    drops = Array.from({length: Math.round(Math.min(220, W / 7))}, () => newDrop(true));
+    stars = Array.from({length: 70}, () => ({x: rnd(0, W), y: rnd(0, H * 0.55), r: rnd(.4, 1.4), p: rnd(0, 6.28), s: rnd(.4, 1.4)}));
+    bokeh = Array.from({length: 9}, (_, i) => ({x: rnd(0, W), y: rnd(H * .62, H * .84), r: rnd(18, 46), hue: [195, 265, 305, 220][i % 4], p: rnd(0, 6.28)}));
+  }
+  function newDrop(initial) {
+    const depth = rnd(.4, 1);
+    return {x: rnd(-40, W + 40), y: initial ? rnd(-H, H) : rnd(-80, -10), len: 12 + depth * 22, v: 520 + depth * 620, a: .12 + depth * .35, fy: H * rnd(.78, .97), d: depth};
+  }
+  let last = performance.now();
+  function frame(now) {
+    if (!cv.isConnected) return;               // launcher gone — stop animating
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    ctx.clearRect(0, 0, W, H);
+    for (const s of stars) {
+      s.p += dt * s.s;
+      ctx.globalAlpha = .25 + .55 * Math.abs(Math.sin(s.p));
+      ctx.fillStyle = '#dbe6ff';
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill();
+    }
+    for (const b of bokeh) {                  // soft out-of-focus neon lights
+      b.p += dt * .4;
+      const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+      const a = .10 + .05 * Math.sin(b.p);
+      g.addColorStop(0, `hsla(${b.hue},95%,65%,${a})`); g.addColorStop(1, `hsla(${b.hue},95%,65%,0)`);
+      ctx.globalAlpha = 1; ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 6.283); ctx.fill();
+    }
+    ctx.lineWidth = 1.1; ctx.lineCap = 'round';
+    for (const d of drops) {
+      d.y += d.v * dt; d.x -= d.v * dt * .12;
+      ctx.globalAlpha = d.a;
+      ctx.strokeStyle = '#a9c8ff';
+      ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x + d.len * .12, d.y - d.len); ctx.stroke();
+      if (d.y >= d.fy) {
+        if (ripples.length < 90) ripples.push({x: d.x, y: d.fy, r: 1, max: 8 + d.d * 20, a: .45 * d.d});
+        Object.assign(d, newDrop(false));
+      }
+    }
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i];
+      r.r += dt * 26; r.a -= dt * .5;
+      if (r.a <= 0 || r.r > r.max) { ripples.splice(i, 1); continue; }
+      ctx.globalAlpha = r.a; ctx.strokeStyle = '#8fb5ff'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.ellipse(r.x, r.y, r.r, r.r * .32, 0, 0, 6.283); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(frame);
+  }
+  sizeCanvas(); addEventListener('resize', sizeCanvas);
+  requestAnimationFrame(frame);
+
+  /* ───────── whispers ───────── */
+  const VIBES = [
+    'Don’t make a sound…', 'Stepping over the creaky floorboard…', 'Granny is listening…', 'Looking for the key…',
+    'Something is moving downstairs…', 'Hiding under the bed…', 'Counting the days…', 'Mind the bear traps…',
+    'The front door is locked. It always is.', 'Was that a footstep?', 'Steam build, same old house…'
+  ];
+  let vibeIdx = 0;
+  const vibeTimer = setInterval(() => {
+    const el = $('vibe');
+    if (!el || !el.isConnected) return clearInterval(vibeTimer);
+    el.classList.add('fade');
+    setTimeout(() => { vibeIdx = (vibeIdx + 1) % VIBES.length; el.textContent = VIBES[vibeIdx]; el.classList.remove('fade'); }, 700);
+  }, 4600);
+  function setVibe(text) { vibeIdx = -1; const v = $('vibe'); if (v) v.textContent = text; }
+
+  /* waits until the Unity player reports it is ready (the game's own page sets window.myGameInstance) */
+  function waitForUnity(maxMs) {
+    return new Promise(resolve => {
+      const t0 = performance.now(); let lastPct = -1, lastInfo = '', lastChange = t0, warned = false;
+      const tick = () => {
+        const now = performance.now();
+        const bar = document.getElementById('unity-progress-bar-full') || document.getElementById('progress_fill');
+        const up = bar ? (parseFloat(bar.style.width) || 0) : 0;
+        const info = document.querySelector('.gameloader-progress-info');
+        const infoText = info ? info.textContent.trim() : '';
+        const ready = !!(window.myGameInstance || window.unityInstance);
+        if (!ready) setProgress(80 + 19 * Math.min(1, up / 100));
+        if (up !== lastPct || infoText !== lastInfo) {
+          lastPct = up; lastInfo = infoText; lastChange = now; warned = false;
+          if (infoText) setPhase('Waking the house…', infoText);
+        }
+        if (!ready && !warned && now - lastChange > 45000) {
+          warned = true;
+          diag('watchdog', `no progress for 45s (game says: "${infoText || 'nothing'}", bar ${Math.round(up)}%)`);
+          setPhase('Taking a while…', 'Unity hasn’t reported progress for 45 seconds. Open “diagnostics” below (or Copy log) and send it to me.');
+          const b = $('diagBox'); if (b) b.open = true;
+        }
+        if (ready || now - t0 > maxMs) return resolve();
+        setTimeout(tick, 250);
+      };
+      tick();
+    });
+  }
+
+  /* ───────── brotli (the big scene bundle is stored brotli-compressed; GitHub can't tell the browser to unpack it) ───────── */
+  let brotliFn = null;
+  async function getBrotli() {
+    if (brotliFn) return brotliFn;
+    try {   // newer browsers can do it natively
+      new DecompressionStream('brotli');
+      return brotliFn = async blob => new Uint8Array(await new Response(blob.stream().pipeThrough(new DecompressionStream('brotli'))).arrayBuffer());
+    } catch (_) {}
+    const sources = ['https://cdn.jsdelivr.net/npm/brotli-wasm@3.0.1/index.web.js', 'https://cdn.jsdelivr.net/npm/brotli-wasm@2.0.1/index.web.js', 'https://esm.sh/brotli-wasm@3.0.1'];
+    let lastErr = null;
+    for (const url of sources) {
+      try {
+        const mod = await import(url);
+        const b = await (mod.default || mod);
+        if (!b || typeof b.decompress !== 'function') throw new Error('decoder has no decompress()');
+        return brotliFn = async blob => b.decompress(new Uint8Array(await blob.arrayBuffer()));
+      } catch (e) { lastErr = e; }
+    }
+    throw new Error(`Couldn’t load a brotli decoder (${lastErr?.message || lastErr}). A blocker may be stopping cdn.jsdelivr.net, or try a recent Chrome / Edge.`);
+  }
+  /* Unity "decompression fallback" files (*.unityweb): gzip (or brotli) on disk. The original site sends them with
+     Content-Encoding, GitHub can't, so unpack them here and make fetch() report the encoding the game expects. */
+  async function unpackWebFile(path, blob) {
+    if (!/\.(?:unityweb|gz|br)$/i.test(path)) return {blob, enc: ''};
+    const head = new Uint8Array(await blob.slice(0, 12).arrayBuffer());
+    const ascii = String.fromCharCode(...head);
+    const inner = innerPath(path).toLowerCase();
+    const type = mimeForPath(path);
+    if (head[0] === 0x1f && head[1] === 0x8b) {
+      setFileState(path, 'active', 'unpacking…');
+      const out = new Uint8Array(await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+      return {blob: new Blob([out], {type}), enc: 'gzip'};
+    }
+    const plain = (/\.wasm$/.test(inner) && head[0] === 0 && head[1] === 0x61 && head[2] === 0x73 && head[3] === 0x6d) ||
+                  (/\.data$/.test(inner) && ascii.startsWith('UnityWebData')) ||
+                  (/\.(?:js|json)$/.test(inner) && head[0] >= 0x09 && head[0] <= 0x7e) ||
+                  (/\.bundle$/.test(inner) && ascii.startsWith('UnityFS'));
+    if (plain) return {blob: new Blob([blob], {type}), enc: ''};
+    setFileState(path, 'active', 'unpacking…');
+    const out = await (await getBrotli())(blob);
+    return {blob: new Blob([out], {type}), enc: 'br'};
+  }
+  async function maybeUnpack(path, blob) {
+    const head = new Uint8Array(await blob.slice(0, 8).arrayBuffer());
+    if (String.fromCharCode(...head.subarray(0, 7)) === 'UnityFS') return blob;      // already a plain Unity bundle
+    setFileState(path, 'active', 'unpacking…');
+    const out = await (await getBrotli())(blob);
+    if (String.fromCharCode(...out.subarray(0, 7)) !== 'UnityFS') throw new Error(`${path} didn’t unpack into a Unity bundle.`);
+    return new Blob([out], {type: 'application/octet-stream'});
+  }
+
+  /* ───────── loader engine ───────── */
+  const fileCache = new Map(), rowMap = new Map(), blobUrls = new Map();
+  let repoVersion = BRANCH, loadedCommitSha = '', queue = [], busy = false, checkingForUpdates = false;
+  let updateAvailableSha = '', currentExecuting = '', lastInjectedError = null, noticeTimer = 0;
+  // The game's scripts are injected AFTER the page already finished loading, so anything waiting for
+  // DOMContentLoaded / load (or window.onload / <body onload>) would never run. Capture those and fire them ourselves.
+  const deferredEvents = []; let lifecycleFlushed = false, onloadFn = null;
+  let pendingScripts = 0, pendingXhr = 0;   // game scripts / XHRs still in flight (a real 'load' event waits for these)
+  function installLifecycleShim() {
+    const wrap = (target, orig) => function (type, fn, opts) {
+      if (fn && (type === 'DOMContentLoaded' || (type === 'load' && target === window))) {
+        if (!lifecycleFlushed) deferredEvents.push({target, type, fn}); else setTimeout(() => runHandler(target, type, fn), 0);
+        return;
+      }
+      return orig.call(this, type, fn, opts);
+    };
+    window.addEventListener = wrap(window, window.addEventListener);
+    document.addEventListener = wrap(document, document.addEventListener);
+    Object.defineProperty(window, 'onload', {configurable: true, get: () => onloadFn,
+      set: v => { onloadFn = v; if (lifecycleFlushed && typeof v === 'function') setTimeout(() => runHandler(window, 'load', v), 0); }});
+  }
+  function runHandler(target, type, fn) {
+    try {
+      const ev = new Event(type);
+      if (typeof fn === 'function') fn.call(target, ev); else if (fn && typeof fn.handleEvent === 'function') fn.handleEvent(ev);
+    } catch (e) { console.error(`[launcher] ${type} handler failed:`, e); note(`The game threw an error in a ${type} handler (see console)`, 6000); }
+  }
+  async function flushLifecycle(bodyOnload) {
+    lifecycleFlushed = true;
+    const list = deferredEvents.splice(0);
+    for (const d of list) if (d.type === 'DOMContentLoaded') runHandler(d.target, d.type, d.fn);
+    await new Promise(r => setTimeout(r, 30));
+    for (const d of list) if (d.type === 'load') runHandler(d.target, d.type, d.fn);
+    if (bodyOnload) { try { new Function('event', bodyOnload).call(window, new Event('load')); } catch (e) { console.error('[launcher] body onload failed:', e); } }
+    if (typeof onloadFn === 'function') runHandler(window, 'load', onloadFn);
+    await new Promise(r => setTimeout(r, 30));
+  }
+  const OPTIONAL_SCRIPTS = /(cloudflareinsights\.com|google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|plausible\.io|clarity\.ms|hotjar\.com|mixpanel\.com|segment\.(?:com|io)|umami|statcounter\.com|fullstory\.com|beacon\.min\.js)/i;
+  let ENTRY = 'game.html';
+  const FIREBASE_LIB = /gstatic\.com\/firebasejs\//i;
+  let firebaseTrouble = false;
+  function ensureFirebase() {          // fills in whatever part of the Firebase SDK is missing, so analytics calls can't crash the game
+    const noop = new Proxy(function () {}, {get: (t, k) => k === 'then' ? undefined : noop, apply: () => noop});
+    const fb = window.firebase || (window.firebase = {});
+    if (typeof fb.initializeApp !== 'function') fb.initializeApp = () => noop;
+    for (const k of ['analytics', 'auth', 'firestore']) if (typeof fb[k] !== 'function') fb[k] = () => noop;
+  }
+  let mountStarted = false;            // true once the game's own scripts began running in this page
+  const reverseBlob = new Map();      // blob url -> repo path (for readable error traces)
+  let forceMode = /[?&]force(?:=1|=true|&|$)/i.test(location.search);
+  let updateChecksDisabled = false;
+
+  window.addEventListener('error', e => {
+    if (currentExecuting) lastInjectedError = new Error(`${currentExecuting}: ${e.message || 'JavaScript execution error'}`);
+  }, true);
+
+  const encodePath = p => String(p).split('/').map(encodeURIComponent).join('/');
+  function cleanPath(path) {
+    const parts = [];
+    for (const part of String(path || '').replace(/\\/g, '/').split('/')) {
+      if (!part || part === '.') continue;
+      if (part === '..') { parts.pop(); continue; }
+      parts.push(part);
+    }
+    return parts.join('/');
+  }
+  const dirOf = p => p.includes('/') ? p.slice(0, p.lastIndexOf('/') + 1) : '';
+  const cdnRoot = () => `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${repoVersion}/`;
+  const cdnUrl = p => cdnRoot() + encodePath(cleanPath(p));
+
+  async function fetchResponse(url, timeoutMs = 18000) {
+    const c = new AbortController(), t = setTimeout(() => c.abort(), timeoutMs);
+    try {
+      const r = await fetch(url, {cache: 'no-store', signal: c.signal, headers: {'Accept': 'application/vnd.github+json, text/plain, */*;q=0.8'}});
+      if (!r.ok) throw new Error(`HTTP ${r.status} — ${url}`);
+      return r;
+    } finally { clearTimeout(t); }
+  }
+  const fetchJson = async u => (await fetchResponse(u, 12000)).json();
+
+  const BRANCHES = ['main', 'master'];
+  const TREE_CACHE_KEY = `repoTree2:${OWNER}/${REPO}`;
+  function saveTreeCache(entries) { try { localStorage.setItem(TREE_CACHE_KEY, JSON.stringify({time: Date.now(), branch: BRANCH, entries})); } catch (_) {} }
+  function loadTreeCache() { try { const d = JSON.parse(localStorage.getItem(TREE_CACHE_KEY) || 'null'); if (d && Array.isArray(d.entries) && d.entries.length) { if (d.branch) BRANCH = d.branch; return d.entries; } } catch (_) {} return null; }
+  const branchOrder = () => [BRANCH, ...BRANCHES.filter(x => x !== BRANCH)];
+
+  async function discoverTreeViaCdn() {
+    let lastErr = null;
+    for (const b of branchOrder()) {
+      try {
+        const d = await (await fetchResponse(`https://data.jsdelivr.com/v1/packages/gh/${OWNER}/${REPO}@${b}?structure=flat`, 15000)).json();
+        if (!d || !Array.isArray(d.files) || !d.files.length) throw new Error('jsDelivr returned no file list.');
+        BRANCH = b;
+        return d.files.map(f => ({path: String(f.name || '').replace(/^\/+/, ''), size: Number(f.size) || 0})).filter(e => e.path);
+      } catch (e) { lastErr = e; }
+    }
+    throw lastErr;
+  }
+  async function discoverTreeWithoutApi(reason) {
+    loadedCommitSha = ''; updateChecksDisabled = true;
+    try { const e = await discoverTreeViaCdn(); repoVersion = BRANCH; saveTreeCache(e); return e; }
+    catch (err) {
+      const cached = loadTreeCache(); if (cached) { repoVersion = BRANCH; return cached; }
+      throw new Error(`Could not list the game's files without the GitHub API. ${reason ? reason + ' ' : ''}jsDelivr: ${err?.message || err}`);
+    }
+  }
+  async function discoverTree() {
+    if (forceMode) return discoverTreeWithoutApi('');
+    let firstError = null;
+    for (const b of branchOrder()) {
+      try {
+        const commit = await fetchJson(`${API_ROOT}/commits/${b}`);
+        if (!commit.sha) throw new Error('No commit SHA returned.');
+        const tree = await fetchJson(`${API_ROOT}/git/trees/${commit.sha}?recursive=1`);
+        if (tree.truncated || !Array.isArray(tree.tree)) throw new Error('GitHub returned an incomplete file tree.');
+        BRANCH = b; repoVersion = commit.sha; loadedCommitSha = commit.sha;
+        const entries = tree.tree.filter(i => i.type === 'blob' && i.path).map(i => ({path: i.path, size: i.size || 0}));
+        saveTreeCache(entries); return entries;
+      } catch (e) { firstError = firstError || e; if (!/HTTP 404/.test(String(e?.message))) break; }   // 404 = wrong branch name, try the next one
+    }
+    note('GitHub API is busy — using the CDN file list instead.', 4000);
+    return discoverTreeWithoutApi(`GitHub: ${firstError?.message || firstError}.`);
+  }
+
+  // The game's entry page: root index.html, otherwise the shallowest index.html in the repo.
+  function pickEntry(paths) {
+    if (paths.includes('game.html')) return 'game.html';   // index.html in this repo is just an iframe wrapper around game.html
+    if (paths.includes('index.html')) return 'index.html';
+    const idx = paths.filter(p => /(^|\/)index\.html?$/i.test(p)).sort((a, b) => a.split('/').length - b.split('/').length || a.localeCompare(b));
+    if (idx.length) return idx[0];
+    const html = paths.filter(p => /\.html?$/i.test(p)).sort((a, b) => a.split('/').length - b.split('/').length);
+    return html[0] || null;
+  }
+
+  const SIZES = new Map(), GOT = new Map(); let phase = 'download';
+  function createQueue(paths) {
+    queue = paths.slice(); rowMap.clear(); $('assetList').replaceChildren();
+    for (const path of queue) {
+      const row = document.createElement('div'); row.className = 'asset-row'; row.dataset.path = path; row.dataset.loaded = 'false';
+      const icon = document.createElement('span'); icon.className = 'asset-icon'; icon.textContent = '·';
+      const name = document.createElement('span'); name.className = 'asset-name'; name.textContent = path; name.title = path;
+      const state = document.createElement('span'); state.className = 'asset-state'; state.textContent = '';
+      row.append(icon, name, state); $('assetList').appendChild(row); rowMap.set(path, row);
+    }
+    updateMeter();
+  }
+  function setFileState(path, state, detail) {
+    const row = rowMap.get(path); if (!row) return;
+    row.classList.remove('active', 'done', 'failed');
+    if (state !== 'queued') row.classList.add(state);
+    row.querySelector('.asset-icon').textContent = state === 'done' ? '✓' : state === 'failed' ? '!' : state === 'active' ? '◌' : '·';
+    row.querySelector('.asset-state').textContent = detail || '';
+    updateMeter();
+  }
+  function setProgress(percent) {
+    const p = Math.max(0, Math.min(100, Math.round(percent)));
+    const liq = $('liquid'); if (liq) liq.style.transform = `translateY(${(84 * (1 - p / 100)).toFixed(1)}px)`;   // 84px = empty, 0 = full
+    const bar = $('bar'); if (bar) bar.setAttribute('aria-valuenow', String(p));
+    const t = $('filePercent'); if (t) t.textContent = `${p}%`;
+  }
+  function updateMeter() {
+    const rows = queue.map(p => rowMap.get(p)).filter(Boolean);
+    if (!rows.length) { $('fileStep').textContent = '0/0'; setProgress(0); $('assetCount').textContent = ''; return; }
+    const loaded = rows.filter(r => r.dataset.loaded === 'true').length;
+    const failed = rows.filter(r => r.classList.contains('failed')).length;
+    const cur = rows.find(r => r.classList.contains('active')) || rows.find(r => r.dataset.loaded !== 'true') || rows[rows.length - 1];
+    $('currentFile').textContent = cur.dataset.path.length > 46 ? '…' + cur.dataset.path.slice(-45) : cur.dataset.path;
+    $('fileStep').textContent = `${loaded}/${rows.length}`;
+    $('assetCount').textContent = `(${loaded}/${rows.length}${failed ? ` · ${failed} failed` : ''})`;
+    if (phase === 'download') {   // weighted by bytes, so the 38 MB game binary doesn't make the bar look frozen
+      let total = 0, done = 0;
+      for (const p of queue) { const s = SIZES.get(p) || 150000; total += s; done += Math.min(GOT.get(p) || 0, s); }
+      setProgress(Math.min(80, 80 * done / Math.max(1, total)));
+    }
+    const active = $('assetList').querySelector('.asset-row.active');
+    if (active) active.scrollIntoView({block: 'nearest'});
+  }
+  function setPhase(title, message) { const a = $('statusTitle'), b = $('statusText'); if (a) a.textContent = title; if (b) b.textContent = message; }
+  function showError(message) {
+    $('error').hidden = false; $('error').textContent = message;
+    $('statusTitle').textContent = 'Something went wrong';
+    setVibe('Stay calm — try again in a moment.');
+  }
+  function clearError() { const e = $('error'); if (e) { e.hidden = true; e.textContent = ''; } }
+  function note(message, duration = 3000) {
+    const n = $('launcherNotice'); if (!n) return;
+    n.textContent = message; n.classList.add('show');
+    clearTimeout(noticeTimer); noticeTimer = setTimeout(() => n.classList.remove('show'), duration);
+  }
+
+  /* ───────── diagnostics: everything the game says or breaks on is mirrored into the "diagnostics" box ───────── */
+  const DIAG = [];
+  function diag(kind, msg) {
+    try {
+      DIAG.push(`${new Date().toLocaleTimeString()} ${kind}: ${String(msg).replace(/\s+/g, ' ').slice(0, 500)}`);
+      if (DIAG.length > 80) DIAG.shift();
+      const el = document.getElementById('diag'); if (el) { el.textContent = DIAG.join('\n'); el.scrollTop = el.scrollHeight; }
+    } catch (_) {}
+  }
+  (function hookConsole() {
+    for (const k of ['error', 'warn']) {
+      const orig = console[k].bind(console);
+      console[k] = (...a) => { diag(k, a.map(x => (x && x.message) || (typeof x === 'object' ? (() => { try { return JSON.stringify(x); } catch (_) { return String(x); } })() : String(x))).join(' ')); orig(...a); };
+    }
+    window.addEventListener('error', e => diag('error', `${e.message || 'error'} ${e.filename ? '@ ' + (reverseBlob.get(e.filename) || e.filename) + ':' + (e.lineno || '') : ''}`));
+    window.addEventListener('unhandledrejection', e => diag('rejection', (e.reason && (e.reason.stack || e.reason.message)) || e.reason));
+    const nativeAlert = window.alert.bind(window);
+    window.alert = m => { diag('ALERT from game', m); if (document.getElementById('error')) { $('error').hidden = false; $('error').textContent = `The game reported:\n${m}`; $('statusTitle').textContent = 'Something went wrong'; const b = $('diagBox'); if (b) b.open = true; } else nativeAlert(m); };
+  })();
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('#copylog'); if (!b) return;
+    const text = DIAG.join('\n') || '(nothing logged yet)';
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => note('Log copied', 2000), () => { const b2 = $('diagBox'); if (b2) b2.open = true; note('Couldn’t copy — select the text in the diagnostics box', 4000); });
+  });
+
+  const innerPath = p => String(p).replace(/\.(?:unityweb|gz|br)$/i, '');
+  function mimeForPath(path) {
+    const ext = innerPath(path).toLowerCase().split('.').pop();
+    return ({html:'text/html;charset=utf-8',htm:'text/html;charset=utf-8',css:'text/css;charset=utf-8',js:'text/javascript;charset=utf-8',mjs:'text/javascript;charset=utf-8',
+      json:'application/json;charset=utf-8',txt:'text/plain;charset=utf-8',md:'text/markdown;charset=utf-8',svg:'image/svg+xml',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',
+      webp:'image/webp',gif:'image/gif',ico:'image/x-icon',mp3:'audio/mpeg',ogg:'audio/ogg',oga:'audio/ogg',m4a:'audio/mp4',wav:'audio/wav',mp4:'video/mp4',webm:'video/webm',
+      woff:'font/woff',woff2:'font/woff2',ttf:'font/ttf',otf:'font/otf',wasm:'application/wasm',xml:'application/xml;charset=utf-8',
+      yml:'text/yaml;charset=utf-8',yaml:'text/yaml;charset=utf-8',webmanifest:'application/manifest+json;charset=utf-8'})[ext] || 'application/octet-stream';
+  }
+  const isTextPath = p => /\.(?:html?|xhtml|css|js|mjs|cjs|json|md|txt|xml|ya?ml|svg|webmanifest|toml|ini|csv|tsv|map|glsl|vert|frag)$/i.test(p);
+
+  async function fetchRepoFile(path) {
+    const enc = encodePath(path);
+    const rawA = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${repoVersion}/${enc}`;
+    const rawB = `https://raw.githubusercontent.com/${OWNER}/${REPO}/refs/heads/${BRANCH}/${enc}`;
+    const cdnA = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${encodeURIComponent(repoVersion)}/${enc}`;
+    const cdnB = `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/${enc}`;
+    const urls = forceMode ? [cdnA, cdnB, rawA, rawB] : [rawA, rawB, cdnA, cdnB];
+    const errors = []; let rec = null;
+    for (const url of urls) {
+      try {
+        const r = await fetchResponse(url, 30000);
+        const total = SIZES.get(path) || Number(r.headers.get('content-length')) || 0;
+        const chunks = []; let got = 0;
+        if (r.body && r.body.getReader) {
+          const rd = r.body.getReader();
+          for (;;) { const {done, value} = await rd.read(); if (done) break; chunks.push(value); got += value.length; GOT.set(path, total ? Math.min(got, total) : got); updateMeter(); }
+        } else { const b = await r.arrayBuffer(); chunks.push(new Uint8Array(b)); got = b.byteLength; }
+        const blob = new Blob(chunks, {type: mimeForPath(path)});          // kept as a Blob: no second copy in memory
+        rec = {blob, text: isTextPath(path) ? await blob.text() : null, sourceUrl: url, mime: mimeForPath(path), empty: !blob.size};
+        break;
+      } catch (e) { errors.push(e?.message || String(e)); GOT.set(path, 0); }
+    }
+    if (!rec) throw new Error(`Unable to fetch ${path}. ${errors.slice(0, 4).join(' | ')}`);
+    if (/\.bundle$/i.test(path)) rec.blob = await maybeUnpack(path, rec.blob);
+    if (/\.(?:unityweb|gz|br)$/i.test(path)) { const u = await unpackWebFile(path, rec.blob); rec.blob = u.blob; rec.fakeEncoding = u.enc; rec.mime = u.blob.type; }
+    GOT.set(path, SIZES.get(path) || rec.blob.size);
+    return rec;
+  }
+
+  async function downloadEveryFile(paths) {
+    fileCache.clear();
+    let next = 0; const failures = [];
+    const worker = async () => {
+      while (true) {
+        const i = next++; if (i >= paths.length) return;
+        const path = paths[i];
+        setFileState(path, 'active', '…');
+        try {
+          const rec = await fetchRepoFile(path);
+          fileCache.set(path, rec);
+          rowMap.get(path).dataset.loaded = 'true';
+          setFileState(path, 'done', '');
+        } catch (e) { failures.push({path, error: e}); setFileState(path, 'failed', 'failed'); }
+      }
+    };
+    await Promise.all(Array.from({length: Math.min(6, paths.length)}, worker));
+    if (failures.length) {
+      throw new Error(`${failures.length} file(s) could not be downloaded, so the launcher stopped instead of starting with missing pieces.\n\n` +
+        failures.slice(0, 12).map(f => `• ${f.path}: ${f.error?.message || f.error}`).join('\n') + (failures.length > 12 ? `\n…and ${failures.length - 12} more` : ''));
+    }
+  }
+
+  function resolveLocalPath(reference, basePath = ENTRY) {
+    const ref = String(reference || '').trim();
+    if (!ref || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|data:|blob:|javascript:|mailto:|tel:)/i.test(ref)) return null;
+    try {
+      const url = new URL(ref, `https://repo-path.invalid/${encodePath(cleanPath(basePath))}`);
+      if (url.origin !== 'https://repo-path.invalid') return null;
+      let dec; try { dec = decodeURIComponent(url.pathname); } catch (_) { dec = url.pathname; }
+      return cleanPath(dec.replace(/^\/+/, '')) || ENTRY;
+    } catch (_) { return null; }
+  }
+  function clearBlobUrls() { for (const u of blobUrls.values()) URL.revokeObjectURL(u); blobUrls.clear(); reverseBlob.clear(); }
+  function createBlobUrls() {
+    clearBlobUrls();
+    for (const [path, f] of fileCache) { const u = URL.createObjectURL(f.blob); blobUrls.set(path, u); reverseBlob.set(u, path); }
+  }
+  const isExternalReference = v => /^(?:[a-z][a-z0-9+.-]*:|\/\/|#|data:|blob:|var\()/i.test(String(v || '').trim());
+  function resolveAssetUrl(reference, fromPath) {
+    const ref = String(reference || '').trim();
+    if (!ref || isExternalReference(ref)) return ref;
+    const lp = resolveLocalPath(ref, fromPath);
+    return lp ? (blobUrls.get(lp) || cdnUrl(lp)) : ref;
+  }
+  function rewriteCss(css, cssPath) {
+    let out = String(css || '');
+    out = out.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/gi, (all, q, ref) => {
+      const v = String(ref).trim(); if (!v || isExternalReference(v)) return all;
+      return `url("${resolveAssetUrl(v, cssPath).replace(/"/g, '%22')}")`;
+    });
+    out = out.replace(/(@import\s+)(["'])([^"']+)\2/gi, (all, lead, q, ref) => isExternalReference(ref) ? all : `${lead}${q}${resolveAssetUrl(ref, cssPath)}${q}`);
+    return out.replace(/<\/style/gi, '<\\/style');
+  }
+  function rewriteDocumentReferences(doc, pagePath) {
+    for (const el of doc.querySelectorAll('[src],[href],[poster],[data]')) {
+      for (const attr of ['src', 'href', 'poster', 'data']) {
+        if (!el.hasAttribute(attr)) continue;
+        const v = el.getAttribute(attr).trim();
+        if (!v || isExternalReference(v)) continue;
+        const p = resolveLocalPath(v, pagePath);
+        if (p) el.setAttribute(attr, blobUrls.get(p) || cdnUrl(p));
+      }
+    }
+  }
+
+  // Games often load things by relative path at runtime (fetch / XHR / new Image()).
+  // Those would resolve against THIS launcher's address, so point them at the downloaded files instead.
+  // about:blank / sandboxed tabs have an opaque origin: localStorage & IndexedDB throw there, and RPG Maker's localforage then
+  // dies with “No available storage method found”. Give the game an in-memory localStorage so it can still run
+  // (saves just won't survive closing that tab).
+  function installStorageFallback() {
+    try { localStorage.setItem('__launcher_t', '1'); localStorage.removeItem('__launcher_t'); return; } catch (_) {}
+    const mk = () => {
+      const m = new Map();
+      return {getItem: k => m.has(String(k)) ? m.get(String(k)) : null, setItem: (k, v) => { m.set(String(k), String(v)); }, removeItem: k => { m.delete(String(k)); },
+        clear: () => m.clear(), key: i => { const a = [...m.keys()]; return i < a.length ? a[i] : null; }, get length() { return m.size; }};
+    };
+    for (const name of ['localStorage', 'sessionStorage']) { try { Object.defineProperty(window, name, {configurable: true, value: mk()}); } catch (_) {} }
+    note('Heads up: this tab can’t store saves, so progress is lost when you close it. Open the launcher from localhost or a normal page to keep saves.', 12000);
+  }
+  function installRuntimeRedirects() {
+    installStorageFallback();
+    const entryDir = dirOf(ENTRY);
+    let launcherDir = location.pathname.replace(/[^/]*$/, '');
+    try { launcherDir = decodeURIComponent(launcherDir); } catch (_) {}
+    const keys = [...blobUrls.keys()], suffixCache = new Map();
+    const suffixMatch = p => {
+      if (!p) return null;
+      if (suffixCache.has(p)) return suffixCache.get(p);
+      let hit = null;
+      for (const k of keys) { if (p === k || p.endsWith('/' + k) || (p.includes('/') && k.endsWith('/' + p))) { hit = k; break; } }
+      suffixCache.set(p, hit); return hit;
+    };
+    // Maps relative requests (which would hit the launcher's own address, e.g. file:///C:/Users/… or about:blank)
+    // and URLs that resolved against the repo CDN base to the downloaded blob. Falls back to the pinned CDN copy.
+    const cdnPrefix = cdnRoot(), cdnPrefixUrl = new URL(cdnPrefix);
+    const hasRealBase = /^(?:https?|file):/i.test(location.protocol);
+    const safeDecode = x => { try { return decodeURIComponent(x); } catch (_) { return x; } };
+    const mapUrl = input => {
+      try {
+        const raw = typeof input === 'string' ? input : (input && input.url) || String(input);
+        if (!raw || /^(?:data:|blob:|about:|javascript:|mailto:)/i.test(raw)) return null;
+        const u = new URL(raw, hasRealBase ? location.href : cdnPrefix + entryDir);
+        if (u.origin === cdnPrefixUrl.origin && u.pathname.startsWith(cdnPrefixUrl.pathname)) {
+          const p = cleanPath(safeDecode(u.pathname.slice(cdnPrefixUrl.pathname.length)));
+          const key = blobUrls.has(p) ? p : suffixMatch(p);
+          return key ? blobUrls.get(key) + (u.hash || '') : null;
+        }
+        if (u.protocol !== location.protocol || u.host !== location.host) return null;
+        let p = safeDecode(u.pathname);
+        if (p.startsWith(launcherDir)) p = p.slice(launcherDir.length);
+        p = cleanPath(p);
+        if (!p) return null;
+        const key = [cleanPath(entryDir + p), p].find(k => blobUrls.has(k)) || suffixMatch(p);
+        if (key) return blobUrls.get(key) + (u.hash || '');
+        return cdnUrl(cleanPath(entryDir + p)) + (u.search || '');
+      } catch (_) { return null; }
+    };
+    const origFetch = window.fetch.bind(window);
+    window.fetch = async (input, init) => {
+      const m = mapUrl(input);
+      if (!m) return origFetch(input, init);
+      if (m.startsWith(cdnPrefix)) diag('not in repo, trying CDN', m.replace(cdnPrefix, ''));
+      let resp;
+      try { resp = await origFetch(typeof input === 'string' || input instanceof URL ? m : new Request(m, input), init); }
+      catch (e) { diag('fetch failed', `${typeof input === 'string' ? input : input.url} — ${e.message}`); throw e; }
+      if (!resp.ok) diag(`fetch ${resp.status}`, typeof input === 'string' ? input : (input.url || m));
+      const rp = reverseBlob.get(String(m).split('#')[0]), enc = rp && fileCache.get(rp)?.fakeEncoding;
+      if (!enc) return resp;                       // unpacked .unityweb file: tell Unity it was already decoded, like the real server does
+      const h = new Headers(resp.headers); h.set('Content-Encoding', enc);
+      return new Response(resp.body, {status: resp.status, statusText: resp.statusText, headers: h});
+    };
+    const origOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (method, url, ...rest) { const m = mapUrl(String(url)); return origOpen.call(this, method, m || url, ...rest); };
+    // Plugins read their own name from document.currentScript.src (…/js/plugins/Name.js). A blob: URL has no file name,
+    // so a script that runs from the downloaded copy reports the real repo URL as its src instead.
+    const markScript = (el, mapped) => {
+      if (!el || el.tagName !== 'SCRIPT') return;
+      const path = mapped ? reverseBlob.get(String(mapped).split('#')[0]) : null;
+      if (path) el.__fakeSrc = cdnUrl(path);
+      if (!lifecycleFlushed && !el.__tracked) {
+        el.__tracked = true; pendingScripts++;
+        const done = () => { pendingScripts = Math.max(0, pendingScripts - 1); };
+        el.addEventListener('load', done, {once: true}); el.addEventListener('error', done, {once: true});
+      }
+    };
+    const patchSrc = (Ctor, prop) => {
+      const d = Object.getOwnPropertyDescriptor(Ctor.prototype, prop);
+      if (!d || !d.set) return;
+      Object.defineProperty(Ctor.prototype, prop, {configurable: true, enumerable: d.enumerable, get: d.get, set(v) { const m = typeof v === 'string' ? mapUrl(v) : null; if (this.tagName === 'SCRIPT') markScript(this, m); d.set.call(this, m || v); }});
+    };
+    const origSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function (...a) {
+      if (!lifecycleFlushed) { pendingXhr++; this.addEventListener('loadend', () => { pendingXhr = Math.max(0, pendingXhr - 1); }, {once: true}); }
+      return origSend.apply(this, a);
+    };
+    const csDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'currentScript');
+    if (csDesc && csDesc.get) Object.defineProperty(document, 'currentScript', {configurable: true, get() {
+      const el = csDesc.get.call(document);
+      if (!el || !el.__fakeSrc) return el;
+      return el.__fakeProxy || (el.__fakeProxy = new Proxy(el, {
+        get: (t, k) => { if (k === 'src') return t.__fakeSrc; const v = Reflect.get(t, k, t); return typeof v === 'function' ? v.bind(t) : v; },
+        set: (t, k, v) => { t[k] = v; return true; }
+      }));
+    }});
+    patchSrc(HTMLImageElement, 'src'); patchSrc(HTMLMediaElement, 'src'); patchSrc(HTMLSourceElement, 'src'); patchSrc(HTMLScriptElement, 'src'); patchSrc(HTMLLinkElement, 'href');
+    const origSetAttr = Element.prototype.setAttribute;
+    Element.prototype.setAttribute = function (name, value) {
+      if (typeof value === 'string' && /^(src|href|poster|data)$/i.test(name) && /^(IMG|AUDIO|VIDEO|SOURCE|SCRIPT|LINK|OBJECT|EMBED|TRACK)$/.test(this.tagName)) { const m = mapUrl(value); if (this.tagName === 'SCRIPT' && /^src$/i.test(name)) markScript(this, m); if (m) value = m; }
+      return origSetAttr.call(this, name, value);
+    };
+    // In about:blank / sandboxed tabs location.origin is the string 'null', which postMessage rejects as a target origin.
+    const nativePM = window.postMessage;
+    window.postMessage = function (message, target, transfer) {
+      if (target === 'null') target = '*';
+      else if (target && typeof target === 'object' && target.targetOrigin === 'null') target = Object.assign({}, target, {targetOrigin: '*'});
+      return nativePM.call(this, message, target, transfer);
+    };
+    const NativeAudio = window.Audio;
+    window.Audio = function (src) { const a = new NativeAudio(); if (src !== undefined) a.src = String(src); return a; };
+    window.Audio.prototype = NativeAudio.prototype;
+    const NativeFontFace = window.FontFace;
+    if (NativeFontFace) window.FontFace = class extends NativeFontFace {
+      constructor(family, source, desc) {
+        if (typeof source === 'string') source = source.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/gi, (all, q, ref) => { const m = mapUrl(ref); return m ? `url("${m}")` : all; });
+        super(family, source, desc);
+      }
+    };
+    const NativeWorker = window.Worker;
+    if (NativeWorker) window.Worker = class extends NativeWorker { constructor(url, opts) { super(typeof url === 'string' ? (mapUrl(url) || url) : url, opts); } };
+  }
+
+  function makeScriptPlan(doc, pagePath) {
+    return [...doc.querySelectorAll('script')].map(node => {
+      const attrs = [...node.attributes].reduce((o, a) => (o[a.name] = a.value, o), {});
+      const src = node.getAttribute('src');
+      if (!src) return {path: `${pagePath} (inline script)`, code: node.textContent || '', attrs};
+      const lp = resolveLocalPath(src, pagePath);
+      if (lp && fileCache.has(lp) && String(attrs.type || '').toLowerCase() === 'module') return {path: lp, src: cdnUrl(lp), attrs};
+      if (lp && fileCache.has(lp) && blobUrls.has(lp)) return {path: lp, src: blobUrls.get(lp), attrs, local: true};
+      let ext = src;
+      if (lp) ext = cdnUrl(lp); else { try { ext = new URL(src, cdnRoot() + dirOf(pagePath)).href; } catch (_) {} }
+      return {path: ext, src: ext, attrs};
+    });
+  }
+  async function loadExternalScript(plan) {
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      for (const [n, v] of Object.entries(plan.attrs || {})) { if (['src','async','defer','integrity','crossorigin','referrerpolicy'].includes(n.toLowerCase())) continue; s.setAttribute(n, v); }
+      if (plan.attrs?.integrity) s.integrity = plan.attrs.integrity;
+      if (plan.attrs?.crossorigin) s.crossOrigin = plan.attrs.crossorigin;
+      s.async = false;
+      const loadFail = msg => Object.assign(new Error(msg), {loadFailure: true});
+      const t = setTimeout(() => { s.remove(); reject(loadFail(`Timed out loading ${plan.path}`)); }, 25000);
+      s.onload = () => { clearTimeout(t); resolve(); };
+      s.onerror = () => { clearTimeout(t); reject(loadFail(`Failed to load ${plan.path}`)); };
+      currentExecuting = plan.path; lastInjectedError = null;
+      if (plan.local) s.__fakeSrc = cdnUrl(plan.path);
+      s.src = plan.src; document.body.appendChild(s);
+    });
+    await new Promise(r => setTimeout(r, 0));
+    const err = lastInjectedError; currentExecuting = ''; lastInjectedError = null;
+    if (err && plan.local) throw err;
+    if (err) console.warn('[launcher] helper library reported an error (ignored):', plan.path, err.message);
+  }
+  async function runInlineScript(plan) {
+    const s = document.createElement('script');
+    for (const [n, v] of Object.entries(plan.attrs || {})) { if (['src','async','defer','integrity','crossorigin','referrerpolicy'].includes(n.toLowerCase())) continue; s.setAttribute(n, v); }
+    s.async = false; s.dataset.launcherSource = plan.path;
+    currentExecuting = plan.path; lastInjectedError = null;
+    s.textContent = `${plan.code}\n//# sourceURL=${RAW_ROOT}${encodeURIComponent(repoVersion)}/${encodePath(plan.path.split(' (inline script)')[0])}`.replace(/<\/script/gi, '<\\/script');
+    document.body.appendChild(s);
+    await new Promise(r => setTimeout(r, 0));
+    const err = lastInjectedError; currentExecuting = ''; lastInjectedError = null;
+    if (err) throw err;
+  }
+
+  // A real 'load' event waits for every dynamically added script; replicate that so the game's own load handler runs on time.
+  function waitForQuiet(maxMs) {
+    return new Promise(resolve => {
+      const t0 = performance.now(); let calm = 0;
+      const tick = () => {
+        calm = (pendingScripts === 0 && pendingXhr === 0) ? calm + 1 : 0;
+        if (calm >= 3 || performance.now() - t0 > maxMs) return resolve();
+        setTimeout(tick, 100);
+      };
+      setTimeout(tick, 100);
+    });
+  }
+  function waitForGame(maxMs) {
+    return new Promise(resolve => {
+      const t0 = performance.now();
+      const tick = () => {
+        const c = document.querySelector('body canvas:not(#rain)');
+        if (c || performance.now() - t0 > maxMs) return resolve();
+        setTimeout(tick, 150);
+      };
+      setTimeout(tick, 400);
+    });
+  }
+
+  // Camera-flick fix: browsers sometimes deliver a single bogus mouse-move with a huge movementX/Y (pointer-lock glitch, focus/lock changes),
+  // which the game turns into a sudden camera snap. Those events are swallowed before the game ever sees them.
+  function installCameraFlickFix() {
+    const MAX_STEP = 180;        // px in one event; real mouse movement is far below this, raise it if fast flicks feel blocked
+    let skip = 0;                // events to drop right after the pointer is (re)locked
+    const reset = () => { skip = 3; };
+    document.addEventListener('pointerlockchange', reset, true);
+    addEventListener('focus', reset, true);
+    addEventListener('blur', reset, true);
+    document.addEventListener('visibilitychange', reset, true);
+    const guard = e => {
+      if (!e.isTrusted) return;
+      if (skip > 0) { skip--; e.stopImmediatePropagation(); return; }
+      const mx = e.movementX || 0, my = e.movementY || 0;
+      if (Math.abs(mx) > MAX_STEP || Math.abs(my) > MAX_STEP) { e.stopImmediatePropagation(); e.preventDefault(); }
+    };
+    window.addEventListener('mousemove', guard, true);
+    window.addEventListener('pointermove', guard, true);
+  }
+
+  async function mountAndRun() {
+    const entry = fileCache.get(ENTRY);
+    if (!entry || entry.text === null) throw new Error(`The entry page (${ENTRY}) is missing or unreadable.`);
+    setPhase('Setting the scene…', 'Mapping the game’s files and getting the page ready.');
+    setVibe('Dimming the lights…');
+    const doc = new DOMParser().parseFromString(entry.text, 'text/html');
+    if (!doc.documentElement || !doc.head || !doc.body) throw new Error(`${ENTRY} did not parse as a complete HTML document.`);
+
+    // the page ships a Yandex-Games Content-Security-Policy that would block the blob/CDN mapping here — it isn't needed to play
+    for (const m of [...doc.querySelectorAll('meta[http-equiv]')]) if (/content-security-policy/i.test(m.getAttribute('http-equiv'))) m.remove();
+    const base = doc.createElement('base'); base.href = cdnRoot() + dirOf(ENTRY);
+    const prior = doc.querySelector('base'); if (prior) prior.replaceWith(base); else doc.head.prepend(base);
+
+    const scriptPlan = makeScriptPlan(doc, ENTRY);
+    for (const link of [...doc.querySelectorAll('link[rel~="stylesheet"][href]')]) {
+      const lp = resolveLocalPath(link.getAttribute('href'), ENTRY);
+      if (lp && fileCache.has(lp)) {
+        const rec = fileCache.get(lp);
+        if (rec.text === null) throw new Error(`Stylesheet ${lp} is not a text file.`);
+        const st = doc.createElement('style');
+        // keep id / class / media / data-* so the game can still find and toggle its own stylesheet (e.g. getElementById('x').disabled)
+        for (const a of [...link.attributes]) { if (/^(rel|href|integrity|crossorigin|type|as|referrerpolicy|onload|onerror)$/i.test(a.name)) continue; try { st.setAttribute(a.name, a.value); } catch (_) {} }
+        st.dataset.repositoryFile = lp; st.textContent = rewriteCss(rec.text, lp); link.replaceWith(st);
+      } else if (lp) link.href = cdnUrl(lp);
+    }
+    // inline <style> blocks can also reference local files
+    for (const st of doc.querySelectorAll('style:not([data-repository-file])')) st.textContent = rewriteCss(st.textContent, ENTRY);
+    rewriteDocumentReferences(doc, ENTRY);
+    doc.querySelectorAll('script').forEach(n => n.remove());
+
+    installRuntimeRedirects();
+
+    const loader = $('loading'), notice = $('launcherNotice'), loaderStyle = $('launcherStyles');
+    const bodyOnload = doc.body.getAttribute('onload');
+    const copyAttrs = (from, to) => {
+      for (const a of [...to.attributes]) to.removeAttribute(a.name);
+      for (const a of [...from.attributes]) { if (/^on/i.test(a.name)) continue; try { to.setAttribute(a.name, a.value); } catch (_) {} }
+    };
+    copyAttrs(doc.documentElement, document.documentElement);   // the game's <html> / <body> classes & styles
+    mountStarted = true;
+    const headNodes = [...doc.head.childNodes].map(n => document.importNode(n, true));
+    document.head.replaceChildren(...headNodes, loaderStyle);
+    document.documentElement.lang = doc.documentElement.lang || 'en';
+    document.title = 'Granny Steam Webport';
+    const appNodes = [...doc.body.childNodes].map(n => document.importNode(n, true));
+    copyAttrs(doc.body, document.body);
+    document.body.replaceChildren(...appNodes, loader, notice);
+    installLifecycleShim();
+    installCameraFlickFix();
+
+    let libs = 0;
+    for (const plan of scriptPlan) {
+      if (plan.src) {
+        if (plan.local) {                       // the game's own file, run from the downloaded copy
+          setPhase('Starting the game…', `Running ${plan.path}.`);
+          if (rowMap.has(plan.path)) setFileState(plan.path, 'active', '');
+          await loadExternalScript(plan);
+          if (rowMap.has(plan.path)) setFileState(plan.path, 'done', '');
+          continue;
+        }
+        // analytics / tracking beacons are never needed to play, and ad-blockers often block them
+        if (OPTIONAL_SCRIPTS.test(plan.src)) { console.info('[launcher] skipped optional script', plan.src); continue; }
+        setPhase('Warming up…', `Loading helper library ${++libs}.`);
+        if (FIREBASE_LIB.test(plan.src)) {                 // Firebase is only used for analytics: never let it stop the game
+          try { await loadExternalScript(plan); } catch (e) { console.warn('[launcher] Firebase script skipped:', plan.src, e); firebaseTrouble = true; }
+          if (firebaseTrouble || !window.firebase) { firebaseTrouble = true; ensureFirebase(); }
+          continue;
+        }
+        try { await loadExternalScript(plan); }
+        catch (firstErr) {
+          if (!firstErr.loadFailure) throw firstErr;     // it ran and threw — never run a script twice
+          console.warn('[launcher] retrying', plan.src, firstErr);
+          try { await loadExternalScript(plan); }
+          catch (secondErr) {
+            if (!secondErr.loadFailure) throw secondErr;
+            throw new Error(`A library the game needs could not be loaded (an ad-blocker or network filter may be blocking it):\n${plan.src}`);
+          }
+        }
+      } else {
+        if (!plan.code.trim()) continue;
+        const lp = plan.path.replace(/ \(inline script\)$/, '');
+        setPhase('Starting the game…', `Running ${lp}.`);
+        if (rowMap.has(lp)) setFileState(lp, 'active', '');
+        if (firebaseTrouble) ensureFirebase();
+        try { await runInlineScript(plan); }
+        catch (e) { if (firebaseTrouble && /firebase/i.test(String(e?.message))) console.warn('[launcher] ignored Firebase error:', e); else throw e; }
+        if (rowMap.has(lp)) setFileState(lp, 'done', '');
+      }
+    }
+
+    setPhase('Starting the game…', 'Loading the game’s scripts and plugins.');
+    await waitForQuiet(15000);
+    setPhase('Starting the game…', 'Waking everything up.');
+    await flushLifecycle(bodyOnload);
+    phase = 'engine'; setProgress(80);
+    setPhase('Waking the house…', 'The game engine is starting up. This part can take a little while.');
+    setVibe('Don’t make a sound…');
+    await waitForUnity(240000);                      // dissolve only once Unity itself says it's ready
+    setProgress(100); $('fileStep').textContent = `${fileCache.size}/${fileCache.size}`;
+    setPhase('Welcome home…', 'Granny is waiting.'); setVibe('Good luck.');
+    await new Promise(r => setTimeout(r, 1000));
+    loader.classList.add('hidden');
+    await new Promise(r => setTimeout(r, 2600));
+    loader.remove(); notice.remove(); loaderStyle?.remove();
+  }
+
+  async function launch() {
+    if (busy) return; busy = true;
+    { const rb = $('retry'), fb = $('force'); if (rb) rb.disabled = true; if (fb) fb.disabled = true; }
+    clearError(); $('loading').classList.remove('hidden'); fileCache.clear();
+    try {
+      setPhase('Connecting…', 'Finding the latest version of the game.');
+      $('assetList').replaceChildren(); rowMap.clear(); queue = []; updateMeter();
+      const entries = await discoverTree(); const paths = entries.map(e => e.path); SIZES.clear(); GOT.clear(); phase = 'download'; for (const e of entries) SIZES.set(e.path, e.size || 0);
+      if (!paths.length) throw new Error('The repository came back empty.');
+      const SKIP = /(^|\/)(\.gitattributes|\.gitignore|_headers|README(\.md)?|LICENSE)$/i;
+      for (let i = paths.length - 1; i >= 0; i--) if (SKIP.test(paths[i])) paths.splice(i, 1);
+      const entry = pickEntry(paths);
+      if (!entry) throw new Error('No index.html (or any .html file) was found in the repository, so there is no page to launch.');
+      ENTRY = entry;
+      if (ENTRY === 'game.html') { const wi = paths.indexOf('index.html'); if (wi >= 0) paths.splice(wi, 1); }
+      paths.sort((a, b) => a === ENTRY ? -1 : b === ENTRY ? 1 : a.localeCompare(b));
+      createQueue(paths);
+      setPhase(`Found ${paths.length} files`, `Version ${repoVersion === BRANCH ? BRANCH : repoVersion.slice(0, 7)} · entry page: ${ENTRY}`);
+      await downloadEveryFile(paths);
+      createBlobUrls();
+      diag('files', `${fileCache.size} files, entry ${ENTRY}`);
+      setPhase('Everything’s here', `Fetched ${fileCache.size} files. Setting the scene…`);
+      await mountAndRun();
+    } catch (error) {
+      showError(`${error?.message || String(error)}\n\nNothing was embedded in a frame. Check your connection and that the repository is public, then hit Retry. “Force load” skips the GitHub API if you’re rate limited.${mountStarted ? '\n\nThe game had already begun starting up in this page, so Retry will reload the page for a clean run.' : ''}`);
+      for (const path of queue) { const row = rowMap.get(path); if (row && row.dataset.loaded !== 'true' && !row.classList.contains('failed')) setFileState(path, 'failed', 'not loaded'); }
+    } finally {
+      busy = false;
+      const rb = $('retry'), fb = $('force');              // the loader is already gone after a successful launch
+      if (rb) rb.disabled = false; if (fb) fb.disabled = false;
+    }
+  }
+
+  function showUpdateAvailable(sha) {
+    updateAvailableSha = sha;
+    let b = document.getElementById('repoUpdateBanner');
+    if (!b) {
+      b = document.createElement('div'); b.id = 'repoUpdateBanner';
+      Object.assign(b.style, {position:'fixed',right:'14px',bottom:'14px',zIndex:'2147483647',display:'flex',alignItems:'center',gap:'10px',maxWidth:'min(460px,calc(100vw - 28px))',padding:'10px 14px',border:'1px solid #7a1a1f',borderRadius:'999px',background:'rgba(18,8,6,.96)',color:'#dfe8ff',boxShadow:'0 10px 30px #000a',font:'13px/1.4 system-ui,sans-serif'});
+      const m = document.createElement('span'); m.id = 'repoUpdateMessage';
+      const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = 'Update ↻';
+      Object.assign(btn.style, {border:'0',borderRadius:'999px',padding:'7px 12px',cursor:'pointer',font:'600 12px system-ui,sans-serif',color:'#fff',background:'#a3141b'});
+      btn.addEventListener('click', () => location.reload());
+      b.append(m, btn);
+    }
+    document.getElementById('repoUpdateMessage').textContent = `New version ${sha.slice(0, 7)} available — update whenever you like.`;
+    if (!b.isConnected) document.body.appendChild(b);
+  }
+  async function checkForUpdates() {
+    if (updateChecksDisabled || !loadedCommitSha || busy || checkingForUpdates || document.visibilityState !== 'visible') return;
+    checkingForUpdates = true;
+    try {
+      const r = await fetch(`${API_ROOT}/commits/${BRANCH}`, {cache: 'no-store', headers: {'Accept': 'application/vnd.github+json'}});
+      if (r.status === 403 || r.status === 429) { updateChecksDisabled = true; return; }
+      if (!r.ok) return;
+      const sha = (await r.json())?.sha;
+      // never reload on its own — that could wipe unsaved game progress
+      if (sha && sha !== loadedCommitSha && sha !== updateAvailableSha) showUpdateAvailable(sha);
+    } catch (_) {} finally { checkingForUpdates = false; }
+  }
+
+  // Once the game's scripts have run in this page they can't be run again (their top-level consts would collide),
+  // so Retry / Force after that point needs a fresh page.
+  function relaunch(force) {
+    if (!mountStarted) { if (busy) return; if (force) { forceMode = true; updateChecksDisabled = true; } launch(); return; }
+    if (/^(?:https?|file):/i.test(location.protocol)) {
+      if (force) { const u = new URL(location.href); u.searchParams.set('force', '1'); location.href = u.href; } else location.reload();
+    } else note('The game already started once in this tab — close it and launch again.', 6000);
+  }
+  $('retry').addEventListener('click', () => relaunch(false));
+  $('force').addEventListener('click', () => relaunch(true));
+  launch().catch(err => console.error('[launcher]', err));
+  setInterval(checkForUpdates, 300000);
+})();
+</script>
+</body>
+</html>
