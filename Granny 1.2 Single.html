@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -762,6 +761,26 @@ summary::-webkit-details-marker{display:none}
     });
   }
 
+  // Camera-flick fix: browsers sometimes deliver a single bogus mouse-move with a huge movementX/Y (pointer-lock glitch, focus/lock changes),
+  // which the game turns into a sudden camera snap. Those events are swallowed before the game ever sees them.
+  function installCameraFlickFix() {
+    const MAX_STEP = 180;        // px in one event; real mouse movement is far below this, raise it if fast flicks feel blocked
+    let skip = 0;                // events to drop right after the pointer is (re)locked
+    const reset = () => { skip = 3; };
+    document.addEventListener('pointerlockchange', reset, true);
+    addEventListener('focus', reset, true);
+    addEventListener('blur', reset, true);
+    document.addEventListener('visibilitychange', reset, true);
+    const guard = e => {
+      if (!e.isTrusted) return;
+      if (skip > 0) { skip--; e.stopImmediatePropagation(); return; }
+      const mx = e.movementX || 0, my = e.movementY || 0;
+      if (Math.abs(mx) > MAX_STEP || Math.abs(my) > MAX_STEP) { e.stopImmediatePropagation(); e.preventDefault(); }
+    };
+    window.addEventListener('mousemove', guard, true);
+    window.addEventListener('pointermove', guard, true);
+  }
+
   async function mountAndRun() {
     const entry = fileCache.get(ENTRY);
     if (!entry || entry.text === null) throw new Error(`The entry page (${ENTRY}) is missing or unreadable.`);
@@ -810,6 +829,7 @@ summary::-webkit-details-marker{display:none}
     copyAttrs(doc.body, document.body);
     document.body.replaceChildren(...appNodes, loader, notice);
     installLifecycleShim();
+    installCameraFlickFix();
 
     let libs = 0;
     for (const plan of scriptPlan) {
