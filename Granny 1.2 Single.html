@@ -606,6 +606,26 @@ summary::-webkit-details-marker{display:none}
     // and URLs that resolved against the repo CDN base to the downloaded blob. Falls back to the pinned CDN copy.
     const cdnPrefix = cdnRoot(), cdnPrefixUrl = new URL(cdnPrefix);
     const hasRealBase = /^(?:https?|file):/i.test(location.protocol);
+    // In about:blank / about:srcdoc the page's own address is not a valid base for relative URLs, so Unity's
+    // `new URL("Build/game.data", location.href)` throws "Invalid URL" and the load stalls at 80%.
+    // Wrap URL so that when construction fails for a relative path, it is resolved against the game's folder instead.
+    if (!hasRealBase) {
+      const NativeURL = window.URL, fallbackBase = cdnPrefix + entryDir;
+      const URLShim = function (u, b) {
+        if (!new.target) return NativeURL(u, b);   // preserves the native "must be called with new" error
+        try { return b === undefined ? new NativeURL(u) : new NativeURL(u, b); }
+        catch (err) {
+          if (/^[a-z][a-z0-9+.-]*:/i.test(String(u))) throw err;   // genuinely invalid absolute URL
+          try { return new NativeURL(u, fallbackBase); } catch (_) { throw err; }
+        }
+      };
+      URLShim.prototype = NativeURL.prototype;
+      for (const k of Object.getOwnPropertyNames(NativeURL)) {
+        if (['length', 'name', 'prototype'].includes(k)) continue;
+        try { URLShim[k] = NativeURL[k].bind ? NativeURL[k].bind(NativeURL) : NativeURL[k]; } catch (_) {}
+      }
+      window.URL = URLShim;
+    }
     const safeDecode = x => { try { return decodeURIComponent(x); } catch (_) { return x; } };
     const mapUrl = input => {
       try {
